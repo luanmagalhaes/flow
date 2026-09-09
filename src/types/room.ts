@@ -10,6 +10,7 @@ export const RoundPhase = {
   Idle: "IDLE",
   Writing: "WRITING",
   Reveal: "REVEAL",
+  Scoring: "SCORING",
 } as const;
 
 export type RoundPhase = (typeof RoundPhase)[keyof typeof RoundPhase];

@@ -17,8 +17,18 @@ interface VictoryScreenProps {
 
 export function VictoryScreen({ people, winnerId, myId, onExit }: VictoryScreenProps) {
   const ranking = [...people].sort((a, b) => a.fish - b.fish || a.seat - b.seat);
+  const fewest = ranking.length > 0 ? ranking[0].fish : 0;
+  const front = ranking.filter((person) => person.fish === fewest);
+  const tied = front.length > 1;
   const winner = people.find((person) => person.id === winnerId);
-  const iWon = winnerId !== null && winnerId === myId;
+  const iWon = tied ? front.some((person) => person.id === myId) : winnerId === myId;
+  const headline = tied
+    ? iWon
+      ? "Você empatou na frente!"
+      : `Empate entre ${front.map((person) => person.name).join(" e ")}`
+    : iWon
+      ? "Você venceu!"
+      : `${winner?.name ?? "Alguém"} venceu`;
 
   return (
     <Screen
@@ -35,11 +45,11 @@ export function VictoryScreen({ people, winnerId, myId, onExit }: VictoryScreenP
           <Fish className="w-28" tone="soft" />
         </div>
 
-        <h1 className="display text-4xl leading-tight text-balance text-ink">
-          {iWon ? "Você venceu!" : `${winner?.name ?? "Alguém"} venceu`}
-        </h1>
+        <h1 className="display text-4xl leading-tight text-balance text-ink">{headline}</h1>
         <p className="max-w-[28ch] text-sm font-semibold text-ink/65">
-          Terminou com {fish(winner?.fish ?? 0)} na mão. Menos peixe, mais fluxo.
+          {tied
+            ? `Terminaram com ${fish(fewest)} cada. Ninguém saiu na frente.`
+            : `Terminou com ${fish(winner?.fish ?? 0)} na mão. Menos peixe, mais fluxo.`}
         </p>
       </div>
 
@@ -50,7 +60,7 @@ export function VictoryScreen({ people, winnerId, myId, onExit }: VictoryScreenP
             <li
               key={person.id}
               className={`flex items-center gap-3 rounded-2xl border-2 border-ink p-3 ${
-                person.id === winnerId ? "bg-cyan" : "bg-paper"
+                person.fish === fewest ? "bg-cyan" : "bg-paper"
               }`}
             >
               <span className="display flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-ink text-sm text-paper">

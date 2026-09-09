@@ -51,9 +51,17 @@ export function editDistance(a: string, b: string): number {
   return rows[a.length][b.length];
 }
 
+function digitsOf(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
 export function closeEnough(a: string, b: string): boolean {
   if (a === b) {
     return true;
+  }
+
+  if (digitsOf(a) !== digitsOf(b)) {
+    return false;
   }
 
   const longest = Math.max(a.length, b.length);

@@ -103,7 +103,12 @@ export const api = {
     ),
 
   draw: (code: string, token: string) =>
-    request<{ roundNumber: number; prompt: { id: string; body: string } }>(
+    request<{
+      roundNumber: number;
+      prompt: { id: string; body: string } | null;
+      finished: boolean;
+      winnerId: string | null;
+    }>(
       `/api/rooms/${code}/draw`,
       { method: "POST" },
       token,

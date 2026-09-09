@@ -200,6 +200,13 @@ export function TableScreen({
             </>
           ) : null}
 
+          {room.round_phase === RoundPhase.Scoring ? (
+            <div className="edge-card rounded-3xl border-4 border-ink bg-paper p-5 text-center">
+              <p className="display text-lg text-ink">Fechando a rodada...</p>
+              <p className="mt-1 text-sm text-ink/60">Distribuindo os peixes do cardume.</p>
+            </div>
+          ) : null}
+
           {room.round_phase === RoundPhase.Reveal ? (
             <div className="edge-card rounded-3xl border-4 border-ink bg-paper p-5">
               <p className="display mb-4 text-lg leading-tight text-ink">{promptBody}</p>

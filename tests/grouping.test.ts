@@ -135,3 +135,38 @@ describe("ajuste manual de quem leu a carta", () => {
     expect(split.every((group) => group.playerIds.length > 0)).toBe(true);
   });
 });
+
+describe("números não são erro de digitação", () => {
+  it("não junta respostas que diferem por um dígito", () => {
+    expect(closeEnough("outro 2", "outro 3")).toBe(false);
+    expect(closeEnough("top 10", "top 20")).toBe(false);
+    expect(closeEnough("anos 90", "anos 80")).toBe(false);
+  });
+
+  it("ainda junta erro de digitação em texto sem número", () => {
+    expect(closeEnough("morango", "morrango")).toBe(true);
+  });
+
+  it("junta quando o número é o mesmo e a letra escorregou", () => {
+    expect(closeEnough("copa 2002", "copa 2002 ")).toBe(true);
+    expect(closeEnough("ano 1990", "anno 1990")).toBe(true);
+  });
+
+  it("separa dois anos próximos, que a mesa jamais consideraria iguais", () => {
+    expect(closeEnough("1990", "1991")).toBe(false);
+    expect(closeEnough("copa de 1994", "copa de 1998")).toBe(false);
+  });
+});
+
+describe("agrupamento com números", () => {
+  it("mantém respostas numéricas distintas separadas", () => {
+    const groups = groupAnswers([
+      { playerId: "a", body: "1990" },
+      { playerId: "b", body: "1991" },
+      { playerId: "c", body: "1990" },
+    ]);
+
+    expect(groups).toHaveLength(2);
+    expect(groups[0].playerIds.sort()).toEqual(["a", "c"]);
+  });
+});

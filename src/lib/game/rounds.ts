@@ -84,13 +84,15 @@ export async function drawPrompt(input: { code: string; token: string }) {
   const available = promptsForDeck(room.deck).filter((prompt) => !used.has(prompt.id));
 
   if (available.length === 0) {
-    return finishByPrompts(room);
+    const ending = await finishByPrompts(room);
+
+    return { roundNumber: room.round_number, prompt: null, finished: true as const, ...ending };
   }
 
   const prompt = available[Math.floor(Math.random() * available.length)];
   const roundNumber = room.round_number + 1;
 
-  await client
+  const { data: opened } = await client
     .from("fl_rooms")
     .update({
       round_number: roundNumber,
@@ -100,7 +102,13 @@ export async function drawPrompt(input: { code: string; token: string }) {
       used_prompts: [...room.used_prompts, prompt.id],
       last_round: null,
     })
-    .eq("id", room.id);
+    .eq("id", room.id)
+    .eq("round_phase", RoundPhase.Idle)
+    .select("id");
+
+  if (!opened || opened.length === 0) {
+    throw new ServiceError("essa carta já foi puxada", 409);
+  }
 
   await record({
     roomId: room.id,
@@ -109,7 +117,12 @@ export async function drawPrompt(input: { code: string; token: string }) {
     detail: prompt.body,
   });
 
-  return { roundNumber, prompt: { id: prompt.id, body: prompt.body } };
+  return {
+    roundNumber,
+    prompt: { id: prompt.id, body: prompt.body },
+    finished: false as const,
+    winnerId: null,
+  };
 }
 
 export async function submitAnswer(input: { code: string; token: string; body: string }) {
@@ -197,10 +210,16 @@ export async function revealRound(input: { code: string; token?: string; forced?
 
   await persistGroups(room.id, room.round_number, groups);
 
-  await client
+  const { data: flipped } = await client
     .from("fl_rooms")
     .update({ round_phase: RoundPhase.Reveal })
-    .eq("id", room.id);
+    .eq("id", room.id)
+    .eq("round_phase", RoundPhase.Writing)
+    .select("id");
+
+  if (!flipped || flipped.length === 0) {
+    throw new ServiceError("as lousas já foram viradas", 409);
+  }
 
   await record({
     roomId: room.id,
@@ -299,7 +318,7 @@ async function finishByPrompts(room: RoomRow) {
     detail: "as cartas do baralho acabaram",
   });
 
-  throw new ServiceError("as cartas acabaram, a partida terminou", 409);
+  return { winnerId: front[0]?.playerId ?? null };
 }
 
 export async function confirmRound(input: { code: string; token: string }) {
@@ -312,6 +331,17 @@ export async function confirmRound(input: { code: string; token: string }) {
 
   if (room.round_phase !== RoundPhase.Reveal) {
     throw new ServiceError("essa rodada ainda não foi revelada", 409);
+  }
+
+  const { data: locked } = await client
+    .from("fl_rooms")
+    .update({ round_phase: RoundPhase.Scoring, round_started_at: new Date().toISOString() })
+    .eq("id", room.id)
+    .eq("round_phase", RoundPhase.Reveal)
+    .select("id");
+
+  if (!locked || locked.length === 0) {
+    throw new ServiceError("essa rodada já foi fechada", 409);
   }
 
   const people = await roster(room.id);
@@ -412,10 +442,30 @@ export async function confirmRound(input: { code: string; token: string }) {
   return { report, finished: false as const, winnerId: null };
 }
 
+const scoringRescueSeconds = 20;
+
 export async function expireWriting(input: { code: string }) {
   const room = await loadRoom(input.code);
 
-  if (room.phase !== RoomPhase.Playing || room.round_phase !== RoundPhase.Writing) {
+  if (room.phase !== RoomPhase.Playing) {
+    return { revealed: false as const };
+  }
+
+  if (room.round_phase === RoundPhase.Scoring) {
+    if (secondsLeft(room.round_started_at, scoringRescueSeconds, Date.now()) > 0) {
+      return { revealed: false as const };
+    }
+
+    await serverClient()
+      .from("fl_rooms")
+      .update({ round_phase: RoundPhase.Reveal })
+      .eq("id", room.id)
+      .eq("round_phase", RoundPhase.Scoring);
+
+    return { revealed: false as const, rescued: true as const };
+  }
+
+  if (room.round_phase !== RoundPhase.Writing) {
     return { revealed: false as const };
   }
 
