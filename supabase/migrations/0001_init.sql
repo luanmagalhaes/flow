@@ -5,7 +5,7 @@ create table if not exists fl_rooms (
   deck text not null default 'GENERAL',
   school_size smallint not null default 50,
   fish_left smallint not null default 50,
-  write_seconds smallint not null default 90,
+  write_seconds smallint not null default 60,
   host_player_id uuid,
   reader_player_id uuid,
   winner_player_id uuid,

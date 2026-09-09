@@ -8,11 +8,10 @@ interface SlateProps {
   prompt: string;
   saved: string | null;
   busy: boolean;
-  secondsLeft: number;
   onSubmit: (body: string) => void;
 }
 
-export function Slate({ prompt, saved, busy, secondsLeft, onSubmit }: SlateProps) {
+export function Slate({ prompt, saved, busy, onSubmit }: SlateProps) {
   const [draft, setDraft] = useState(saved ?? "");
   const field = useRef<HTMLInputElement>(null);
   const touched = useRef(false);
@@ -37,14 +36,9 @@ export function Slate({ prompt, saved, busy, secondsLeft, onSubmit }: SlateProps
       </div>
 
       <div className="edge-card rounded-3xl border-4 border-ink bg-paper p-4">
-        <div className="mb-2 flex items-baseline justify-between gap-2">
+        <div className="mb-2">
           <span className="display text-xs uppercase tracking-[0.18em] text-ink/45">
             Sua lousa
-          </span>
-          <span
-            className={`display text-xs ${secondsLeft <= 10 ? "text-koi" : "text-ink/45"}`}
-          >
-            {secondsLeft}s
           </span>
         </div>
 

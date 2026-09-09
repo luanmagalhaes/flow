@@ -14,6 +14,7 @@ import {
   roster,
 } from "@/lib/game/shared";
 import { normalize } from "@/lib/game/text";
+import { answered, caught } from "@/utils/plural";
 import { RoomPhase, RoundPhase, type RoomRow, type RoundReport } from "@/types/room";
 
 function assertPlaying(room: RoomRow): void {
@@ -225,7 +226,7 @@ export async function revealRound(input: { code: string; token?: string; forced?
     roomId: room.id,
     type: "ROUND_REVEALED",
     actorId: room.reader_player_id,
-    detail: `${rows.length} de ${people.length} responderam`,
+    detail: answered(rows.length, people.length),
   });
 
   return { revealed: true as const, groups };
@@ -436,7 +437,7 @@ export async function confirmRound(input: { code: string; token: string }) {
     actorId: me.id,
     detail: outcome.everyoneAlone
       ? "ninguém concordou com ninguém, a mesa toda pegou peixe"
-      : `${outcome.hookedPlayerIds.length} pegaram peixe · maioria de ${outcome.majoritySize}`,
+      : `${caught(outcome.hookedPlayerIds.length)} · maioria de ${outcome.majoritySize}`,
   });
 
   return { report, finished: false as const, winnerId: null };
@@ -497,7 +498,7 @@ export async function expireWriting(input: { code: string }) {
     roomId: room.id,
     kind: "TIMEOUT",
     title: "Tempo esgotado",
-    text: `A lousa fechou com ${rows.length} de ${(await roster(room.id)).length} respostas.`,
+    text: `A lousa fechou com ${answered(rows.length, (await roster(room.id)).length)}.`,
   });
 
   return { revealed: true as const };

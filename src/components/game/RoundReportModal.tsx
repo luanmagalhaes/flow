@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/Button";
 import { Fish } from "@/components/ui/Fish";
 import { Modal } from "@/components/ui/Modal";
-import { fish } from "@/utils/plural";
+import { caught, fish } from "@/utils/plural";
 import type { PlayerRow, RoundReport } from "@/types/room";
 
 interface RoundReportModalProps {
@@ -73,8 +73,8 @@ export function RoundReportModal({ report, people, myId, onClose }: RoundReportM
 
       <p className="mt-4 rounded-2xl border-2 border-ink bg-foam px-3 py-2.5 text-center text-xs font-semibold text-ink">
         {report.everyoneAlone
-          ? `A mesa toda pegou ${fish(1)}.`
-          : `Maioria de ${report.majoritySize} · ${report.hookedPlayerIds.length === 0 ? "ninguém pegou peixe" : `${report.hookedPlayerIds.length} pegaram peixe`}`}
+          ? `A mesa toda pegou ${fish(1)} cada.`
+          : `Maioria de ${report.majoritySize} · ${caught(report.hookedPlayerIds.length)}`}
         {" · "}
         cardume com {fish(report.fishLeft)}
       </p>

@@ -8,6 +8,7 @@ import { FishTally } from "@/components/ui/FishTally";
 import { Screen } from "@/components/ui/Screen";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { RevealBoard } from "@/components/game/RevealBoard";
+import { Countdown } from "@/components/game/Countdown";
 import { Slate } from "@/components/game/Slate";
 import type { AnswerGroup } from "@/lib/game/grouping";
 import { fish } from "@/utils/plural";
@@ -152,12 +153,19 @@ export function TableScreen({
 
           {room.round_phase === RoundPhase.Writing ? (
             <>
+              <div className="edge-card rounded-3xl border-4 border-ink bg-paper p-4">
+                <Countdown
+                  secondsLeft={secondsLeft}
+                  total={room.write_seconds}
+                  label={`Rodada ${room.round_number} · lousa aberta`}
+                />
+              </div>
+
               <Slate
                 key={`${room.round_number}-${room.current_prompt_id ?? "none"}`}
                 prompt={promptBody}
                 saved={myAnswer}
                 busy={busy}
-                secondsLeft={secondsLeft}
                 onSubmit={onAnswer}
               />
 
