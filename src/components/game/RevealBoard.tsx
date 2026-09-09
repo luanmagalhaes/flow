@@ -31,14 +31,36 @@ export function RevealBoard({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-baseline justify-between gap-2">
+      <div>
         <h2 className="display text-lg text-ink">O que a mesa escreveu</h2>
-        {isReader ? (
-          <span className="text-[0.7rem] font-semibold uppercase tracking-wider text-ink/45">
-            toque em dois para juntar
-          </span>
-        ) : null}
+        <p className="mt-1 text-xs text-ink/60">
+          {isReader
+            ? "Confira se o agrupamento ficou justo antes de fechar. Quem estiver fora do maior grupo pega peixe."
+            : "Quem leu a carta está conferindo os grupos."}
+        </p>
       </div>
+
+      {isReader ? (
+        <div className="rounded-2xl border-2 border-dashed border-ink/30 bg-foam/60 p-3">
+          <span className="display block text-[0.7rem] uppercase tracking-[0.14em] text-ink/55">
+            Você decide
+          </span>
+          <ul className="mt-1.5 flex flex-col gap-1 text-xs text-ink/75">
+            <li>
+              <strong className="text-ink">É a mesma resposta?</strong> Toque em{" "}
+              <span className="display rounded-md bg-paper px-1.5 py-0.5 ring-1 ring-ink/20">
+                é a mesma
+              </span>{" "}
+              nos dois grupos e eles viram um. Serve para “cachorro” e “cão”.
+            </li>
+            <li>
+              <strong className="text-ink">Juntou errado?</strong> Toque no{" "}
+              <span className="display rounded-md bg-paper px-1.5 py-0.5 ring-1 ring-ink/20">×</span>{" "}
+              ao lado do nome para tirar a pessoa do grupo.
+            </li>
+          </ul>
+        </div>
+      ) : null}
 
       <ul className="flex flex-col gap-2">
         {groups.map((group) => {
@@ -67,9 +89,11 @@ export function RevealBoard({
 
                         setPicked(active ? null : group.key);
                       }}
-                      className="display shrink-0 cursor-pointer rounded-xl border-2 border-ink bg-paper px-2 py-1 text-xs text-ink transition-colors hover:bg-foam"
+                      className={`display shrink-0 cursor-pointer rounded-xl border-2 border-ink px-2 py-1 text-xs transition-colors ${
+                        active ? "bg-ink text-paper" : "bg-paper text-ink hover:bg-foam"
+                      }`}
                     >
-                      {active ? "juntar com..." : "juntar"}
+                      {picked && !active ? "juntar aqui" : active ? "juntar com qual?" : "é a mesma"}
                     </button>
                   ) : (
                     <span className="display flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-ink text-xs text-paper">
@@ -93,8 +117,9 @@ export function RevealBoard({
                               type="button"
                               disabled={busy}
                               onClick={() => onSplit(id)}
-                              aria-label={`Separar ${nameFor(id)} deste grupo`}
-                              className="cursor-pointer text-ink/40 transition-colors hover:text-koi"
+                              aria-label={`Tirar ${nameFor(id)} deste grupo`}
+                              title={`Tirar ${nameFor(id)} deste grupo`}
+                              className="cursor-pointer px-0.5 text-ink/40 transition-colors hover:text-koi"
                             >
                               ×
                             </button>
@@ -125,14 +150,21 @@ export function RevealBoard({
       ) : null}
 
       {isReader ? (
-        <Button variant="ink" size="lg" fullWidth disabled={busy} onClick={onConfirm}>
-          {busy ? "Fechando..." : "Fechar a rodada e dar os peixes"}
-        </Button>
-      ) : (
-        <p className="display text-center text-sm text-ink/60">
-          Quem leu a carta está conferindo os grupos
-        </p>
-      )}
+        <div className="flex flex-col gap-2">
+          {picked ? (
+            <button
+              type="button"
+              onClick={() => setPicked(null)}
+              className="display cursor-pointer rounded-xl px-3 py-2 text-xs text-ink/55 transition-colors hover:text-ink"
+            >
+              cancelar a junção
+            </button>
+          ) : null}
+          <Button variant="ink" size="lg" fullWidth disabled={busy} onClick={onConfirm}>
+            {busy ? "Fechando..." : "Fechar a rodada e dar os peixes"}
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }
