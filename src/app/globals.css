@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0a1633;
+  --color-ink-soft: #1b2a52;
+  --color-abyss: #052ba8;
+  --color-deep: #0756d8;
+  --color-blue: #0f9af3;
+  --color-cyan: #2fd1f4;
+  --color-shallow: #7ae3f2;
+  --color-foam: #d3f8fd;
+  --color-paper: #ffffff;
+  --color-koi: #ea1705;
+  --color-koi-soft: #fa804e;
+  --color-koi-deep: #bf1204;
+  --color-sand: #ffe9b8;
+
+  --font-display: var(--font-baloo), "Arial Black", sans-serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+
+  --ease-snap: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-swing: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:root {
+  color-scheme: light;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--color-shallow);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+[role="button"] {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+@utility stage-water {
+  background-image:
+    radial-gradient(120% 80% at 8% 0%, var(--color-foam) 0%, transparent 55%),
+    radial-gradient(100% 70% at 95% 8%, var(--color-cyan) 0%, transparent 50%),
+    linear-gradient(168deg, var(--color-shallow) 0%, var(--color-cyan) 52%, var(--color-blue) 100%);
+}
+
+@utility stage-deep {
+  background-image:
+    radial-gradient(110% 75% at 15% 0%, var(--color-blue) 0%, transparent 52%),
+    linear-gradient(170deg, var(--color-deep) 0%, var(--color-abyss) 100%);
+}
+
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+@utility edge-card {
+  box-shadow: 0 10px 0 var(--color-ink);
+}
+
+@utility edge-press {
+  box-shadow: 0 4px 0 var(--color-ink);
+}
+
+@utility gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+@keyframes fish-swim {
+  from { transform: translate3d(-8%, 0, 0) rotate(-2deg); }
+  50% { transform: translate3d(8%, -6%, 0) rotate(2deg); }
+  to { transform: translate3d(-8%, 0, 0) rotate(-2deg); }
+}
+
+@keyframes word-rise {
+  from { transform: translate3d(0, 26px, 0) scale(0.94); opacity: 0; }
+  to { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+}
+
+@keyframes card-slide {
+  from { transform: translate3d(0, 24px, 0) scale(0.96); opacity: 0; }
+  to { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+}
+
+@keyframes ripple-out {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  70% { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+@keyframes wave-drift {
+  from { transform: translate3d(-3%, 0, 0); }
+  to { transform: translate3d(3%, 0, 0); }
+}
+
+@keyframes stamp-pop {
+  0% { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+  60% { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@utility animate-fish-swim {
+  animation: fish-swim 5200ms ease-in-out infinite;
+  will-change: transform;
+}
+
+@utility animate-word-rise {
+  animation: word-rise 620ms var(--ease-snap) both;
+  will-change: transform, opacity;
+}
+
+@utility animate-card-slide {
+  animation: card-slide 460ms var(--ease-snap) both;
+  will-change: transform, opacity;
+}
+
+@utility animate-ripple-out {
+  animation: ripple-out 1800ms ease-out infinite;
+  will-change: transform, opacity;
+}
+
+@utility animate-wave-drift {
+  animation: wave-drift 9000ms ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@utility animate-stamp-pop {
+  animation: stamp-pop 520ms var(--ease-swing) both;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
