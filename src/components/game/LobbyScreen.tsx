@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { Fish } from "@/components/ui/Fish";
+import { RoomCode } from "@/components/game/RoomCode";
 import { Screen } from "@/components/ui/Screen";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { maxPlayers, minPlayers } from "@/lib/game/limits";
@@ -70,14 +71,11 @@ export function LobbyScreen({
         <Wordmark size="sm" />
       </header>
 
-      <div className="edge-card mb-6 rounded-3xl border-4 border-ink bg-paper p-5 text-center">
-        <span className="display block text-xs uppercase tracking-[0.2em] text-ink/50">
-          Código da mesa
-        </span>
-        <span className="display mt-1 block text-5xl tracking-[0.2em] text-koi">{room.code}</span>
-        <span className="mt-2 block text-xs font-semibold text-ink/55">
-          baralho {deckLabels[room.deck]} · até {maxPlayers} pessoas
-        </span>
+      <div className="mb-6">
+        <RoomCode
+          code={room.code}
+          hint={`baralho ${deckLabels[room.deck]} · até ${maxPlayers} pessoas`}
+        />
       </div>
 
       <section>

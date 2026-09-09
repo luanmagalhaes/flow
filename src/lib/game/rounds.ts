@@ -205,12 +205,6 @@ export async function revealRound(input: { code: string; token?: string; forced?
     throw new ServiceError("ninguém escreveu nada ainda", 409);
   }
 
-  const groups = groupAnswers(
-    rows.map((row) => ({ playerId: row.player_id as string, body: row.body as string })),
-  );
-
-  await persistGroups(room.id, room.round_number, groups);
-
   const { data: flipped } = await client
     .from("fl_rooms")
     .update({ round_phase: RoundPhase.Reveal })
@@ -222,11 +216,18 @@ export async function revealRound(input: { code: string; token?: string; forced?
     throw new ServiceError("as lousas já foram viradas", 409);
   }
 
+  const settled = await answersFor(room.id, room.round_number);
+  const groups = groupAnswers(
+    settled.map((row) => ({ playerId: row.player_id as string, body: row.body as string })),
+  );
+
+  await persistGroups(room.id, room.round_number, groups);
+
   await record({
     roomId: room.id,
     type: "ROUND_REVEALED",
     actorId: room.reader_player_id,
-    detail: answered(rows.length, people.length),
+    detail: answered(settled.length, people.length),
   });
 
   return { revealed: true as const, groups };

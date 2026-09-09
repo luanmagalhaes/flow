@@ -118,9 +118,15 @@ export function TableScreen({
           ← Sair
         </button>
         <div className="flex items-center gap-2">
-          <span className="display rounded-full border-2 border-ink bg-paper px-3 py-1 text-xs text-ink">
+          <button
+            type="button"
+            onClick={() => void navigator.clipboard?.writeText(room.code).catch(() => undefined)}
+            aria-label={`Copiar o código ${room.code}`}
+            title="Copiar o código da mesa"
+            className="display cursor-pointer select-all rounded-full border-2 border-ink bg-paper px-3 py-1 text-xs text-ink transition-colors hover:bg-foam"
+          >
             {room.code}
-          </span>
+          </button>
           <span className="display flex items-center gap-1.5 rounded-full border-2 border-ink bg-deep px-3 py-1 text-xs text-paper">
             <Fish className="w-4" tone="soft" />
             {room.fish_left} no cardume
