@@ -495,7 +495,8 @@ async function passReader(room: RoomRow, reason: "SLOW_DRAW") {
     roomId: room.id,
     kind: "TIMEOUT",
     title: `${current.name} lerdou e dormiu na praia`,
-    text: `Passou de ${drawSeconds} segundos sem puxar carta, então a leitura foi para ${nextReader.name}.`,
+    text: `${current.name} lerdou e dormiu na praia: passou de ${drawSeconds} segundos sem puxar carta. Agora quem lê é ${nextReader.name}.`,
+    names: [current.name, nextReader.name],
   });
 
   return { moved: true as const, from: current.name, to: nextReader.name, reason };
@@ -565,6 +566,7 @@ export async function tickRound(input: { code: string }) {
       kind: "TIMEOUT",
       title: "Rodada fechada pelo tempo",
       text: `${reader.name} passou de ${decideSeconds} segundos conferindo, então os peixes foram dados do jeito que estavam.`,
+      names: [reader.name],
     });
 
     await confirmRound({ code: input.code, token: secret.access_token as string });

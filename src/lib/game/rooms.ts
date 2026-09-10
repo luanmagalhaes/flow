@@ -306,8 +306,9 @@ export async function removePlayer(input: { code: string; token: string; playerI
     kind: "REMOVED",
     title: `${target.name} saiu da mesa`,
     text: outcome.newHostName
-      ? `${me.name} tirou ${target.name} · ${outcome.newHostName} virou host`
-      : `${me.name} tirou ${target.name} da partida`,
+      ? `${me.name} tirou ${target.name} da mesa, e ${outcome.newHostName} virou host.`
+      : `${me.name} tirou ${target.name} da partida.`,
+    names: [me.name, target.name, outcome.newHostName ?? ""],
   });
 
   return { removed: true as const, name: target.name };
@@ -333,8 +334,9 @@ export async function leaveRoom(input: { code: string; token: string }) {
     kind: "LEFT",
     title: `${me.name} saiu da partida`,
     text: outcome.newHostName
-      ? `${outcome.newHostName} virou o host`
-      : "a mesa segue sem essa pessoa",
+      ? `${me.name} saiu e ${outcome.newHostName} virou o host.`
+      : `${me.name} saiu e a mesa segue sem essa pessoa.`,
+    names: [me.name, outcome.newHostName ?? ""],
   });
 
   return { left: true as const, lastOne: false as const };

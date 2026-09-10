@@ -20,6 +20,7 @@ export interface RoomNotice {
   kind: "REMOVED" | "LEFT" | "HOST_CHANGED" | "TIMEOUT";
   title: string;
   text: string;
+  names?: string[];
 }
 
 export interface RoundGroupView {

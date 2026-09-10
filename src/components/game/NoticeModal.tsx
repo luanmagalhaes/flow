@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/Button";
 import { Fish } from "@/components/ui/Fish";
 import { Modal } from "@/components/ui/Modal";
+import { splitByNames } from "@/lib/highlight";
 import type { RoomNotice } from "@/types/room";
 
 interface NoticeModalProps {
@@ -36,7 +37,20 @@ export function NoticeModal({ notice, onClose }: NoticeModalProps) {
           <span className="display rounded-full border-2 border-ink bg-paper/90 px-2.5 py-0.5 text-[0.6rem] uppercase tracking-[0.16em] text-ink">
             {marks[notice.kind]}
           </span>
-          <span className="display text-2xl leading-tight text-balance">{notice.title}</span>
+          <span className="display text-2xl leading-tight text-balance">
+            {splitByNames(notice.title, notice.names).map((chunk, index) =>
+              chunk.isName ? (
+                <span
+                  key={`${chunk.text}-${index}`}
+                  className="rounded-lg bg-paper px-1.5 py-0.5 text-ink"
+                >
+                  {chunk.text}
+                </span>
+              ) : (
+                <span key={`plain-${index}`}>{chunk.text}</span>
+              ),
+            )}
+          </span>
         </div>
       }
       footer={
@@ -45,7 +59,17 @@ export function NoticeModal({ notice, onClose }: NoticeModalProps) {
         </Button>
       }
     >
-      <p className="text-center text-base leading-snug text-ink/80">{notice.text}</p>
+      <p className="text-center text-base leading-snug text-ink/80">
+        {splitByNames(notice.text, notice.names).map((chunk, index) =>
+          chunk.isName ? (
+            <strong key={`${chunk.text}-${index}`} className="display text-blue">
+              {chunk.text}
+            </strong>
+          ) : (
+            <span key={`plain-${index}`}>{chunk.text}</span>
+          ),
+        )}
+      </p>
     </Modal>
   );
 }

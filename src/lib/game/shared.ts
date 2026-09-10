@@ -97,12 +97,14 @@ export async function publishNotice(input: {
   kind: RoomNotice["kind"];
   title: string;
   text: string;
+  names?: string[];
 }): Promise<void> {
   const notice: RoomNotice = {
     id: `${input.roomId}-${Date.now()}`,
     kind: input.kind,
     title: input.title,
     text: input.text,
+    names: input.names?.filter((name) => name.trim().length > 0),
   };
 
   await serverClient().from("fl_rooms").update({ last_notice: notice }).eq("id", input.roomId);
