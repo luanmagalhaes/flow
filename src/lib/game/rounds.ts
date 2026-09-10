@@ -488,14 +488,14 @@ async function passReader(room: RoomRow, reason: "SLOW_DRAW") {
     roomId: room.id,
     type: "READER_TIMEOUT",
     actorId: current.id,
-    detail: `Demorou mais de ${drawSeconds} segundos para puxar a carta`,
+    detail: "Lerdou e dormiu na praia",
   });
 
   await publishNotice({
     roomId: room.id,
     kind: "TIMEOUT",
-    title: `${current.name} demorou para puxar a carta`,
-    text: `Passou de ${drawSeconds} segundos sem carta na mesa, então quem lê agora é ${nextReader.name}.`,
+    title: `${current.name} lerdou e dormiu na praia`,
+    text: `Passou de ${drawSeconds} segundos sem puxar carta, então a leitura foi para ${nextReader.name}.`,
   });
 
   return { moved: true as const, from: current.name, to: nextReader.name, reason };

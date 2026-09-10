@@ -52,8 +52,13 @@ const eventLabels: Record<string, string> = {
   GROUP_SPLIT: "separou uma resposta",
   PLAYER_REMOVED: "tirou alguém da mesa",
   PLAYER_LEFT: "saiu da mesa",
+  READER_TIMEOUT: "lerdou e dormiu na praia",
   MATCH_WON: "venceu a partida",
 };
+
+function labelFor(type: string): string {
+  return eventLabels[type] ?? "mexeu na mesa";
+}
 
 export function TableScreen({
   room,
@@ -270,44 +275,55 @@ export function TableScreen({
             <div className="mb-2 flex items-baseline justify-between">
               <h2 className="display text-lg text-ink">Placar</h2>
               <span className="text-[0.7rem] font-semibold uppercase tracking-wider text-ink/45">
-                peixe = ponto negativo
+                {isHost ? "toque em alguém para tirar" : "peixe = ponto negativo"}
               </span>
             </div>
 
             <ul className="flex flex-col gap-2">
               {ranking.map((person, index) => (
-                <li
-                  key={person.id}
-                  className={`flex items-center gap-2.5 rounded-2xl border-2 border-ink p-2.5 ${
-                    person.id === room.reader_player_id ? "bg-cyan" : "bg-paper"
-                  }`}
-                >
-                  <span className="display flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-ink text-xs text-paper">
-                    {index + 1}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="display block truncate text-sm text-ink">
-                      {person.name}
-                      {person.id === myId ? " (você)" : ""}
-                    </span>
-                    {person.id === room.reader_player_id ? (
-                      <span className="block text-[0.65rem] font-semibold uppercase tracking-wider text-ink/55">
-                        lendo a carta
-                      </span>
-                    ) : null}
-                  </span>
-                  <FishTally count={person.fish} max={6} className="shrink-0" />
-                  {isHost && person.id !== myId ? (
-                    <button
-                      type="button"
-                      onClick={() => setConfirmingRemoval(person.id)}
-                      disabled={busy}
-                      aria-label={`Tirar ${person.name} da mesa`}
-                      className="display shrink-0 cursor-pointer rounded-lg px-1.5 py-1 text-[0.65rem] text-ink/35 transition-colors hover:bg-koi hover:text-paper"
-                    >
-                      tirar
-                    </button>
-                  ) : null}
+                <li key={person.id}>
+                  {(() => {
+                    const removable = isHost && person.id !== myId;
+                    const skin = `flex w-full items-center gap-2.5 rounded-2xl border-2 border-ink p-2.5 text-left ${
+                      person.id === room.reader_player_id ? "bg-cyan" : "bg-paper"
+                    }`;
+                    const inside = (
+                      <>
+                        <span className="display flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-ink text-xs text-paper">
+                          {index + 1}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="display block truncate text-sm text-ink">
+                            {person.name}
+                            {person.id === myId ? " (você)" : ""}
+                          </span>
+                          {person.id === room.reader_player_id ? (
+                            <span className="block text-[0.65rem] font-semibold uppercase tracking-wider text-ink/55">
+                              lendo a carta
+                            </span>
+                          ) : null}
+                        </span>
+                        <FishTally count={person.fish} max={6} className="shrink-0" />
+                      </>
+                    );
+
+                    if (!removable) {
+                      return <div className={skin}>{inside}</div>;
+                    }
+
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => setConfirmingRemoval(person.id)}
+                        disabled={busy}
+                        aria-label={`Abrir opções de ${person.name}`}
+                        title={`Toque para tirar ${person.name} da mesa`}
+                        className={`${skin} cursor-pointer transition-colors hover:border-koi hover:bg-koi-soft disabled:cursor-not-allowed`}
+                      >
+                        {inside}
+                      </button>
+                    );
+                  })()}
                 </li>
               ))}
             </ul>
@@ -325,7 +341,7 @@ export function TableScreen({
                     className="rounded-xl border-2 border-ink/15 bg-paper/70 px-3 py-2 text-xs text-ink"
                   >
                     <span className="display">{actor?.name ?? "alguém"}</span>{" "}
-                    <span>{eventLabels[event.type] ?? event.type}</span>
+                    <span>{labelFor(event.type)}</span>
                     {event.detail ? (
                       <span className="mt-0.5 block leading-snug text-ink/60">{event.detail}</span>
                     ) : null}

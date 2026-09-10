@@ -12,9 +12,16 @@ interface NoticeModalProps {
 
 const tones: Record<RoomNotice["kind"], string> = {
   REMOVED: "bg-koi text-paper",
-  LEFT: "bg-deep text-paper",
+  LEFT: "stage-deep text-paper",
   HOST_CHANGED: "bg-cyan text-ink",
-  TIMEOUT: "bg-blue text-paper",
+  TIMEOUT: "bg-sand text-ink",
+};
+
+const marks: Record<RoomNotice["kind"], string> = {
+  REMOVED: "Saiu da mesa",
+  LEFT: "Saiu da mesa",
+  HOST_CHANGED: "Novo host",
+  TIMEOUT: "Tempo",
 };
 
 export function NoticeModal({ notice, onClose }: NoticeModalProps) {
@@ -22,9 +29,14 @@ export function NoticeModal({ notice, onClose }: NoticeModalProps) {
     <Modal
       tone={tones[notice.kind]}
       head={
-        <div className="flex items-center gap-3">
-          <Fish className="w-12 shrink-0" tone="soft" />
-          <span className="display text-lg leading-tight">{notice.title}</span>
+        <div className="flex flex-col items-center gap-2 text-center">
+          <div className={notice.kind === "TIMEOUT" ? "animate-fish-shudder" : ""}>
+            <Fish className="w-14" tone={notice.kind === "REMOVED" ? "koi" : "soft"} />
+          </div>
+          <span className="display rounded-full border-2 border-ink bg-paper/90 px-2.5 py-0.5 text-[0.6rem] uppercase tracking-[0.16em] text-ink">
+            {marks[notice.kind]}
+          </span>
+          <span className="display text-2xl leading-tight text-balance">{notice.title}</span>
         </div>
       }
       footer={
@@ -33,7 +45,7 @@ export function NoticeModal({ notice, onClose }: NoticeModalProps) {
         </Button>
       }
     >
-      <p className="text-sm text-ink/75">{notice.text}</p>
+      <p className="text-center text-base leading-snug text-ink/80">{notice.text}</p>
     </Modal>
   );
 }
