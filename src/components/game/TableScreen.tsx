@@ -169,17 +169,42 @@ export function TableScreen({
               <span className="display block text-xs uppercase tracking-[0.2em] text-ink/50">
                 Rodada {room.round_number + 1}
               </span>
-              <p className="display mt-2 text-xl leading-tight text-ink">
-                {isReader ? "Você lê a próxima carta" : `${reader?.name ?? "Alguém"} lê a carta`}
-              </p>
+
+              <div className="mt-2 flex items-center justify-center gap-2.5">
+                <p className="display text-xl leading-tight text-ink">
+                  {isReader ? "Você lê a próxima carta" : `${reader?.name ?? "Alguém"} lê a carta`}
+                </p>
+                <span
+                  title="Tempo para puxar a carta antes de passar a vez"
+                  className={`display flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-ink text-sm tabular-nums ${
+                    secondsLeft <= 10
+                      ? "animate-tally-bump bg-koi text-paper"
+                      : secondsLeft <= 25
+                        ? "bg-sand text-ink"
+                        : "bg-cyan text-ink"
+                  }`}
+                >
+                  {secondsLeft}
+                </span>
+              </div>
+
               {isReader ? (
-                <div className="mt-4">
-                  <Button variant="koi" size="lg" fullWidth disabled={busy} onClick={onDraw}>
-                    {busy ? "Puxando..." : "Puxar a carta"}
-                  </Button>
-                </div>
+                <>
+                  <p className="mt-1.5 text-xs font-semibold text-ink/60">
+                    {secondsLeft <= 10
+                      ? "Corre, senão a leitura passa para o próximo!"
+                      : "Puxe antes do tempo acabar, senão a vez passa."}
+                  </p>
+                  <div className="mt-4">
+                    <Button variant="koi" size="lg" fullWidth disabled={busy} onClick={onDraw}>
+                      {busy ? "Puxando..." : "Puxar a carta"}
+                    </Button>
+                  </div>
+                </>
               ) : (
-                <p className="mt-2 text-sm text-ink/60">Já vai começar, prepare a lousa.</p>
+                <p className="mt-1.5 text-sm text-ink/60">
+                  Já vai começar, prepare a lousa. Se demorar, a leitura passa.
+                </p>
               )}
             </div>
           ) : null}

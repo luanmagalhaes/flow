@@ -361,7 +361,15 @@ export function GameApp() {
         groups={groups.sort(
           (a, b) => b.playerIds.length - a.playerIds.length || a.key.localeCompare(b.key),
         )}
-        secondsLeft={secondsLeft(state.room.round_started_at, state.room.write_seconds, now)}
+        secondsLeft={secondsLeft(
+          state.room.round_started_at,
+          state.room.round_phase === RoundPhase.Writing
+            ? state.room.write_seconds
+            : state.room.round_phase === RoundPhase.Reveal
+              ? decideSeconds
+              : drawSeconds,
+          now,
+        )}
         isHost={me?.is_host ?? false}
         busy={busy}
         error={error}
