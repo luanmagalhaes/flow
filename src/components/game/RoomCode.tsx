@@ -64,7 +64,7 @@ export function RoomCode({ code, hint }: RoomCodeProps) {
       : feedback === "SHARED"
         ? "Convite pronto para enviar"
         : feedback === "FAILED"
-          ? "Não deu para copiar, selecione o código"
+          ? "Não deu para copiar. Selecione o código."
           : (hint ?? "Toque no código para copiar");
 
   return (

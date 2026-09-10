@@ -1,6 +1,11 @@
 import type { EventRow, PlayerRow, RevealedAnswer, RoomRow } from "@/types/room";
 import type { AnswerGroup } from "@/lib/game/grouping";
 import type { DeckKind } from "@/data/prompts";
+import {
+  messageForStatus,
+  networkMessage,
+  unreadableMessage,
+} from "@/lib/messages";
 
 export interface JoinResponse {
   code: string;
@@ -19,28 +24,6 @@ export interface RoomState {
   answers: RevealedAnswer[];
 }
 
-const statusMessages: Record<number, string> = {
-  400: "esse pedido não fazia sentido para a mesa",
-  401: "sua sessão nesta mesa não vale mais, entre de novo",
-  403: "essa ação não é sua para fazer agora",
-  404: "não encontrei essa mesa",
-  409: "isso não cabe no momento da partida",
-  422: "faltou preencher algo",
-  429: "muitos toques seguidos, espere um instante",
-  500: "a mesa tropeçou aqui do lado do servidor",
-  502: "a mesa está fora do ar por um instante",
-  503: "a mesa está fora do ar por um instante",
-  504: "a mesa demorou demais para responder",
-};
-
-function offlineMessage(): string {
-  if (typeof navigator !== "undefined" && navigator.onLine === false) {
-    return "você está sem internet, a mesa continua esperando";
-  }
-
-  return "não conseguimos falar com a mesa, tentando de novo";
-}
-
 async function request<T>(path: string, init: RequestInit = {}, token?: string): Promise<T> {
   const headers = new Headers(init.headers);
 
@@ -55,7 +38,7 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string):
   try {
     response = await fetch(path, { ...init, headers, cache: "no-store" });
   } catch {
-    throw new Error(offlineMessage());
+    throw new Error(networkMessage(typeof navigator === "undefined" || navigator.onLine !== false));
   }
 
   let payload: unknown = null;
@@ -69,11 +52,11 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string):
   if (!response.ok) {
     const given = (payload as { error?: string } | null)?.error;
 
-    throw new Error(given ?? statusMessages[response.status] ?? "algo deu errado na mesa");
+    throw new Error(given ?? messageForStatus(response.status));
   }
 
   if (payload === null) {
-    throw new Error("a mesa respondeu de um jeito que não entendi");
+    throw new Error(unreadableMessage);
   }
 
   return payload as T;

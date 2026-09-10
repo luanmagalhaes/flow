@@ -25,6 +25,7 @@ interface TableScreenProps {
   groups: AnswerGroup[];
   secondsLeft: number;
   isHost: boolean;
+  quiet: boolean;
   busy: boolean;
   error: string | null;
   onDraw: () => void;
@@ -34,6 +35,8 @@ interface TableScreenProps {
   onSplit: (playerId: string) => void;
   onConfirm: () => void;
   onRemovePlayer: (playerId: string) => void;
+  onQuiet: (next: boolean) => void;
+  onRules: () => void;
   onLeave: () => void;
 }
 
@@ -63,6 +66,7 @@ export function TableScreen({
   groups,
   secondsLeft,
   isHost,
+  quiet,
   busy,
   error,
   onDraw,
@@ -72,6 +76,8 @@ export function TableScreen({
   onSplit,
   onConfirm,
   onRemovePlayer,
+  onQuiet,
+  onRules,
   onLeave,
 }: TableScreenProps) {
   const [confirmingRemoval, setConfirmingRemoval] = useState<string | null>(null);
@@ -131,6 +137,22 @@ export function TableScreen({
             <Fish className="w-4" tone="soft" />
             {room.fish_left} no cardume
           </span>
+          <button
+            type="button"
+            onClick={() => onQuiet(!quiet)}
+            aria-label={quiet ? "Ligar os sons" : "Desligar os sons"}
+            title={quiet ? "Ligar os sons" : "Desligar os sons"}
+            className="display cursor-pointer rounded-full border-2 border-ink bg-paper px-2.5 py-1 text-xs text-ink transition-colors hover:bg-foam"
+          >
+            {quiet ? "som off" : "som on"}
+          </button>
+          <button
+            type="button"
+            onClick={onRules}
+            className="display cursor-pointer rounded-full border-2 border-ink bg-paper px-2.5 py-1 text-xs text-ink transition-colors hover:bg-foam"
+          >
+            regras
+          </button>
           <Wordmark size="sm" className="hidden opacity-60 sm:inline-block" />
         </div>
       </header>
@@ -248,7 +270,7 @@ export function TableScreen({
             <div className="mb-2 flex items-baseline justify-between">
               <h2 className="display text-lg text-ink">Placar</h2>
               <span className="text-[0.7rem] font-semibold uppercase tracking-wider text-ink/45">
-                menos peixe ganha
+                peixe = ponto negativo
               </span>
             </div>
 

@@ -41,17 +41,17 @@ async function attach(room: RoomRow, name: string, isHost: boolean) {
   const trimmed = name.trim();
 
   if (trimmed.length === 0) {
-    throw new ServiceError("escreva um nome", 422);
+    throw new ServiceError("Escreva um nome", 422);
   }
 
   if (trimmed.length > 24) {
-    throw new ServiceError("o nome pode ter no máximo 24 letras", 422);
+    throw new ServiceError("O nome pode ter no máximo 24 letras", 422);
   }
 
   const people = await roster(room.id);
 
   if (people.length >= maxPlayers) {
-    throw new ServiceError(`a mesa já está com ${maxPlayers} jogadores`, 409);
+    throw new ServiceError(`A mesa já está com ${maxPlayers} jogadores`, 409);
   }
 
   const seat = await nextFreeSeat(room.id);
@@ -63,7 +63,7 @@ async function attach(room: RoomRow, name: string, isHost: boolean) {
 
   if (error) {
     if (error.code === "23505" && error.message.includes("fl_players_name_idx")) {
-      throw new ServiceError("esse nome já está na mesa, escolha outro", 409);
+      throw new ServiceError("Esse nome já está na mesa, escolha outro", 409);
     }
 
     throw new ServiceError(error.message, 500);
@@ -112,14 +112,14 @@ export async function createRoom(input: { hostName: string; deck: DeckKind }) {
     return { code: room.code, playerId: player.id, accessToken, name: player.name };
   }
 
-  throw new ServiceError("não foi possível gerar um código de sala", 500);
+  throw new ServiceError("Não foi possível gerar um código de sala", 500);
 }
 
 export async function joinRoom(input: { code: string; name: string }) {
   const room = await loadRoom(input.code);
 
   if (room.phase === RoomPhase.Finished) {
-    throw new ServiceError("essa partida já terminou", 409);
+    throw new ServiceError("Essa partida já terminou", 409);
   }
 
   const { player, accessToken } = await attach(room, input.name, false);
@@ -135,21 +135,21 @@ export async function startMatch(input: { code: string; token: string }) {
   const me = await loadPlayer(room, input.token);
 
   if (!me.is_host) {
-    throw new ServiceError("só o host começa a partida", 403);
+    throw new ServiceError("Só o host começa a partida", 403);
   }
 
   if (room.phase !== RoomPhase.Lobby) {
-    throw new ServiceError("a partida já começou", 409);
+    throw new ServiceError("A partida já começou", 409);
   }
 
   const people = await roster(room.id);
 
   if (people.length < minPlayers) {
-    throw new ServiceError(`precisa de pelo menos ${minPlayers} jogadores`, 409);
+    throw new ServiceError(`Precisa de pelo menos ${minPlayers} jogadores`, 409);
   }
 
   if (promptsForDeck(room.deck).length === 0) {
-    throw new ServiceError("esse baralho está vazio", 409);
+    throw new ServiceError("Esse baralho está vazio", 409);
   }
 
   const school = schoolFor(people.length);
@@ -164,6 +164,7 @@ export async function startMatch(input: { code: string; token: string }) {
       fish_left: school,
       reader_player_id: first.id,
       round_phase: RoundPhase.Idle,
+      round_started_at: new Date().toISOString(),
       round_number: 0,
     })
     .eq("id", room.id);
@@ -229,7 +230,7 @@ async function detach(room: RoomRow, target: PlayerRow) {
   const others = people.filter((person) => person.id !== target.id);
 
   if (others.length === 0) {
-    throw new ServiceError("não dá para esvaziar a sala", 409);
+    throw new ServiceError("Não dá para esvaziar a sala", 409);
   }
 
   await client.from("fl_players").delete().eq("id", target.id);
@@ -277,18 +278,18 @@ export async function removePlayer(input: { code: string; token: string; playerI
   const me = await loadPlayer(room, input.token);
 
   if (!me.is_host) {
-    throw new ServiceError("só o host pode remover jogadores", 403);
+    throw new ServiceError("Só o host pode remover jogadores", 403);
   }
 
   if (input.playerId === me.id) {
-    throw new ServiceError("o host não pode remover a si mesmo", 422);
+    throw new ServiceError("O host não pode remover a si mesmo", 422);
   }
 
   const people = await roster(room.id);
   const target = people.find((person) => person.id === input.playerId);
 
   if (!target) {
-    throw new ServiceError("esse jogador não está nesta sala", 404);
+    throw new ServiceError("Esse jogador não está nesta sala", 404);
   }
 
   const outcome = await detach(room, target);

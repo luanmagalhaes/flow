@@ -15,8 +15,8 @@
   --color-koi-deep: #bf1204;
   --color-sand: #ffe9b8;
 
-  --font-display: var(--font-baloo), "Arial Black", sans-serif;
-  --font-body: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-fredoka), "Trebuchet MS", sans-serif;
+  --font-body: var(--font-jakarta), system-ui, sans-serif;
 
   --ease-snap: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-swing: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -37,6 +37,7 @@ body {
   background: var(--color-shallow);
   color: var(--color-ink);
   font-family: var(--font-body);
+  font-weight: 400;
   -webkit-tap-highlight-color: transparent;
   text-rendering: optimizeLegibility;
 }
@@ -60,14 +61,14 @@ button:disabled {
 
 @utility stage-deep {
   background-image:
-    radial-gradient(110% 75% at 15% 0%, var(--color-blue) 0%, transparent 52%),
-    linear-gradient(170deg, var(--color-deep) 0%, var(--color-abyss) 100%);
+    radial-gradient(120% 80% at 12% 0%, var(--color-shallow) 0%, transparent 55%),
+    linear-gradient(168deg, var(--color-cyan) 0%, var(--color-blue) 100%);
 }
 
 @utility display {
   font-family: var(--font-display);
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  letter-spacing: 0.002em;
 }
 
 @utility edge-card {
@@ -144,6 +145,42 @@ button:disabled {
 @utility animate-stamp-pop {
   animation: stamp-pop 520ms var(--ease-swing) both;
   will-change: transform, opacity;
+}
+
+@keyframes fish-strike {
+  0% { transform: scale(0.2) rotate(-18deg); opacity: 0; }
+  22% { transform: scale(1.5) rotate(6deg); opacity: 1; }
+  45% { transform: scale(1.25) rotate(-4deg); opacity: 1; }
+  100% { transform: translate3d(var(--strike-x, 38vw), var(--strike-y, -34vh), 0) scale(0.16) rotate(20deg); opacity: 0; }
+}
+
+@keyframes fish-shudder {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  20% { transform: translate3d(-6px, 2px, 0) rotate(-5deg); }
+  40% { transform: translate3d(6px, -2px, 0) rotate(5deg); }
+  60% { transform: translate3d(-4px, 1px, 0) rotate(-3deg); }
+  80% { transform: translate3d(4px, -1px, 0) rotate(3deg); }
+}
+
+@keyframes tally-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+@utility animate-fish-strike {
+  animation: fish-strike 1400ms var(--ease-snap) forwards;
+  will-change: transform, opacity;
+}
+
+@utility animate-fish-shudder {
+  animation: fish-shudder 520ms ease-in-out 2;
+  will-change: transform;
+}
+
+@utility animate-tally-bump {
+  animation: tally-bump 420ms var(--ease-swing) both;
+  will-change: transform;
 }
 
 @media (prefers-reduced-motion: reduce) {

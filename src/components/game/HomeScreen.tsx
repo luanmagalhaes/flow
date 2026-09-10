@@ -16,12 +16,13 @@ interface HomeScreenProps {
   onJoin: () => void;
   onResume: (seat: RecentSeat) => void;
   onForget: (code: string) => void;
+  onRules: () => void;
 }
 
 const decks: { key: DeckKind; label: string; hint: string }[] = [
-  { key: "GENERAL", label: "Geral", hint: "para qualquer mesa" },
-  { key: "SPICY", label: "Picante", hint: "com a turma certa" },
-  { key: "MIXED", label: "Misto", hint: "os dois embaralhados" },
+  { key: "GENERAL", label: "Geral", hint: "Para qualquer mesa" },
+  { key: "SPICY", label: "Picante", hint: "Com a turma certa" },
+  { key: "MIXED", label: "Misto", hint: "Os dois embaralhados" },
 ];
 
 export function HomeScreen({
@@ -32,6 +33,7 @@ export function HomeScreen({
   onJoin,
   onResume,
   onForget,
+  onRules,
 }: HomeScreenProps) {
   return (
     <Screen
@@ -43,6 +45,13 @@ export function HomeScreen({
           <Button variant="foam" size="lg" fullWidth onClick={onJoin}>
             Entrar com código
           </Button>
+          <button
+            type="button"
+            onClick={onRules}
+            className="display cursor-pointer rounded-xl px-3 py-1.5 text-sm text-ink/60 transition-colors hover:text-ink"
+          >
+            Como se joga?
+          </button>
         </div>
       }
     >

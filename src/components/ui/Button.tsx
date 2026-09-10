@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type Variant = "ink" | "koi" | "foam" | "deep";
+type Variant = "ink" | "koi" | "foam" | "deep" | "water";
 type Size = "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -15,6 +15,8 @@ const variants: Record<Variant, string> = {
   koi: "bg-koi text-paper ring-2 ring-ink shadow-[0_5px_0_var(--color-ink)] hover:bg-koi-soft hover:shadow-[0_7px_0_var(--color-ink)] active:shadow-[0_2px_0_var(--color-ink)]",
   foam: "bg-paper text-ink ring-2 ring-ink shadow-[0_5px_0_var(--color-ink)] hover:bg-foam hover:shadow-[0_7px_0_var(--color-ink)] active:shadow-[0_2px_0_var(--color-ink)]",
   deep: "bg-deep text-paper ring-2 ring-ink shadow-[0_5px_0_var(--color-ink)] hover:bg-blue hover:shadow-[0_7px_0_var(--color-ink)] active:shadow-[0_2px_0_var(--color-ink)]",
+  water:
+    "bg-blue text-paper ring-2 ring-ink shadow-[0_5px_0_var(--color-ink)] hover:bg-cyan hover:text-ink hover:shadow-[0_7px_0_var(--color-ink)] active:shadow-[0_2px_0_var(--color-ink)]",
 };
 
 const sizes: Record<Size, string> = {

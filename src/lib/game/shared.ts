@@ -32,7 +32,7 @@ export async function loadRoom(code: string): Promise<RoomRow> {
   }
 
   if (!data) {
-    throw new ServiceError("sala não encontrada", 404);
+    throw new ServiceError("Sala não encontrada", 404);
   }
 
   return data as RoomRow;
@@ -48,7 +48,7 @@ export async function loadPlayer(room: RoomRow, token: string): Promise<PlayerRo
     .maybeSingle();
 
   if (!secret) {
-    throw new ServiceError("sessão inválida para esta sala", 401);
+    throw new ServiceError("Sessão inválida para esta sala", 401);
   }
 
   const { data: player } = await client
@@ -58,7 +58,7 @@ export async function loadPlayer(room: RoomRow, token: string): Promise<PlayerRo
     .maybeSingle();
 
   if (!player) {
-    throw new ServiceError("jogador não está mais na sala", 404);
+    throw new ServiceError("Jogador não está mais na sala", 404);
   }
 
   return player as PlayerRow;
@@ -110,6 +110,6 @@ export async function publishNotice(input: {
 
 export function assertReader(room: RoomRow, player: PlayerRow): void {
   if (room.reader_player_id !== player.id) {
-    throw new ServiceError("só quem leu a carta pode fazer isso", 403);
+    throw new ServiceError("Só quem leu a carta pode fazer isso", 403);
   }
 }

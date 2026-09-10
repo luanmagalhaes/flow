@@ -3,7 +3,13 @@ import { serverClient } from "@/lib/supabase";
 import { promptById, promptsForDeck } from "@/data/prompts";
 import { groupAnswers, mergeGroups, splitPlayer, type AnswerGroup } from "@/lib/game/grouping";
 import { nextSeat, secondsLeft } from "@/lib/game/rotation";
-import { fishPerMiss, leaders, schoolExhausted, scoreRound } from "@/lib/game/scoring";
+import { leaders, schoolExhausted, scoreRound } from "@/lib/game/scoring";
+import {
+  decideSeconds,
+  drawSeconds,
+  fishPerMiss,
+  scoringGrace,
+} from "@/lib/game/limits";
 import {
   assertReader,
   loadPlayer,
@@ -19,7 +25,7 @@ import { RoomPhase, RoundPhase, type RoomRow, type RoundReport } from "@/types/r
 
 function assertPlaying(room: RoomRow): void {
   if (room.phase !== RoomPhase.Playing) {
-    throw new ServiceError("a partida não está em andamento", 409);
+    throw new ServiceError("A partida não está em andamento", 409);
   }
 }
 
@@ -78,7 +84,7 @@ export async function drawPrompt(input: { code: string; token: string }) {
   assertReader(room, me);
 
   if (room.round_phase !== RoundPhase.Idle) {
-    throw new ServiceError("a rodada já está em andamento", 409);
+    throw new ServiceError("A rodada já está em andamento", 409);
   }
 
   const used = new Set(room.used_prompts);
@@ -108,7 +114,7 @@ export async function drawPrompt(input: { code: string; token: string }) {
     .select("id");
 
   if (!opened || opened.length === 0) {
-    throw new ServiceError("essa carta já foi puxada", 409);
+    throw new ServiceError("Essa carta já foi puxada", 409);
   }
 
   await record({
@@ -134,23 +140,23 @@ export async function submitAnswer(input: { code: string; token: string; body: s
   assertPlaying(room);
 
   if (room.round_phase !== RoundPhase.Writing) {
-    throw new ServiceError("a lousa está fechada agora", 409);
+    throw new ServiceError("A lousa está fechada agora", 409);
   }
 
   const body = input.body.trim();
 
   if (body.length === 0) {
-    throw new ServiceError("escreva algo na lousa", 422);
+    throw new ServiceError("Escreva algo na lousa", 422);
   }
 
   if (body.length > maxAnswerLength) {
-    throw new ServiceError(`a resposta pode ter no máximo ${maxAnswerLength} letras`, 422);
+    throw new ServiceError(`A resposta pode ter no máximo ${maxAnswerLength} letras`, 422);
   }
 
   const normalized = normalize(body);
 
   if (normalized.length === 0) {
-    throw new ServiceError("escreva pelo menos uma letra ou número", 422);
+    throw new ServiceError("Escreva pelo menos uma letra ou número", 422);
   }
 
   const { error } = await client.from("fl_answers").upsert(
@@ -187,7 +193,7 @@ export async function revealRound(input: { code: string; token?: string; forced?
   assertPlaying(room);
 
   if (room.round_phase !== RoundPhase.Writing) {
-    throw new ServiceError("não há lousa para revelar", 409);
+    throw new ServiceError("Não há lousa para revelar", 409);
   }
 
   const people = await roster(room.id);
@@ -202,18 +208,18 @@ export async function revealRound(input: { code: string; token?: string; forced?
   }
 
   if (rows.length === 0) {
-    throw new ServiceError("ninguém escreveu nada ainda", 409);
+    throw new ServiceError("Ninguém escreveu nada ainda", 409);
   }
 
   const { data: flipped } = await client
     .from("fl_rooms")
-    .update({ round_phase: RoundPhase.Reveal })
+    .update({ round_phase: RoundPhase.Reveal, round_started_at: new Date().toISOString() })
     .eq("id", room.id)
     .eq("round_phase", RoundPhase.Writing)
     .select("id");
 
   if (!flipped || flipped.length === 0) {
-    throw new ServiceError("as lousas já foram viradas", 409);
+    throw new ServiceError("As lousas já foram viradas", 409);
   }
 
   const settled = await answersFor(room.id, room.round_number);
@@ -248,7 +254,7 @@ export async function adjustGroups(input: {
   assertReader(room, me);
 
   if (room.round_phase !== RoundPhase.Reveal) {
-    throw new ServiceError("só dá para ajustar durante a revelação", 409);
+    throw new ServiceError("Só dá para ajustar durante a revelação", 409);
   }
 
   const rows = await answersFor(room.id, room.round_number);
@@ -264,23 +270,23 @@ export async function adjustGroups(input: {
 
   if (input.action === "MERGE") {
     if (!input.sourceKey || !input.targetKey) {
-      throw new ServiceError("informe os dois grupos que viram um", 422);
+      throw new ServiceError("Informe os dois grupos que viram um", 422);
     }
 
     next = mergeGroups(current, input.sourceKey, input.targetKey);
 
     if (next.length === current.length) {
-      throw new ServiceError("esses grupos não podem ser juntados", 422);
+      throw new ServiceError("Esses grupos não podem ser juntados", 422);
     }
   } else {
     if (!input.playerId) {
-      throw new ServiceError("informe quem sai do grupo", 422);
+      throw new ServiceError("Informe quem sai do grupo", 422);
     }
 
     const own = rows.find((row) => row.player_id === input.playerId);
 
     if (!own) {
-      throw new ServiceError("essa pessoa não respondeu nesta rodada", 404);
+      throw new ServiceError("Essa pessoa não respondeu nesta rodada", 404);
     }
 
     next = splitPlayer(current, input.playerId, own.body as string);
@@ -317,7 +323,7 @@ async function finishByPrompts(room: RoomRow) {
     roomId: room.id,
     type: "MATCH_WON",
     actorId: front[0]?.playerId ?? null,
-    detail: "as cartas do baralho acabaram",
+    detail: "As cartas do baralho acabaram",
   });
 
   return { winnerId: front[0]?.playerId ?? null };
@@ -332,7 +338,7 @@ export async function confirmRound(input: { code: string; token: string }) {
   assertReader(room, me);
 
   if (room.round_phase !== RoundPhase.Reveal) {
-    throw new ServiceError("essa rodada ainda não foi revelada", 409);
+    throw new ServiceError("Essa rodada ainda não foi revelada", 409);
   }
 
   const { data: locked } = await client
@@ -343,7 +349,7 @@ export async function confirmRound(input: { code: string; token: string }) {
     .select("id");
 
   if (!locked || locked.length === 0) {
-    throw new ServiceError("essa rodada já foi fechada", 409);
+    throw new ServiceError("Essa rodada já foi fechada", 409);
   }
 
   const people = await roster(room.id);
@@ -426,6 +432,7 @@ export async function confirmRound(input: { code: string; token: string }) {
     .update({
       fish_left: fishLeft,
       round_phase: RoundPhase.Idle,
+      round_started_at: new Date().toISOString(),
       current_prompt_id: null,
       reader_player_id: nextReader.id,
       last_round: report,
@@ -437,60 +444,164 @@ export async function confirmRound(input: { code: string; token: string }) {
     type: outcome.everyoneAlone ? "ROUND_SPLIT" : "ROUND_SCORED",
     actorId: me.id,
     detail: outcome.everyoneAlone
-      ? "ninguém concordou com ninguém, a mesa toda pegou peixe"
+      ? "Ninguém concordou com ninguém, a mesa toda pegou peixe"
       : `${caught(outcome.hookedPlayerIds.length)} · maioria de ${outcome.majoritySize}`,
   });
 
   return { report, finished: false as const, winnerId: null };
 }
 
-const scoringRescueSeconds = 20;
 
-export async function expireWriting(input: { code: string }) {
+async function passReader(room: RoomRow, reason: "SLOW_DRAW") {
+  const client = serverClient();
+  const people = await roster(room.id);
+  const current = people.find((person) => person.id === room.reader_player_id);
+
+  if (!current || people.length < 2) {
+    return { moved: false as const };
+  }
+
+  const following = nextSeat(
+    current.seat,
+    people.map((person) => person.seat),
+  );
+  const nextReader = people.find((person) => person.seat === following) ?? people[0];
+
+  const { data: moved } = await client
+    .from("fl_rooms")
+    .update({
+      reader_player_id: nextReader.id,
+      round_started_at: new Date().toISOString(),
+      round_phase: RoundPhase.Idle,
+      current_prompt_id: null,
+    })
+    .eq("id", room.id)
+    .eq("reader_player_id", current.id)
+    .eq("round_phase", RoundPhase.Idle)
+    .select("id");
+
+  if (!moved || moved.length === 0) {
+    return { moved: false as const };
+  }
+
+  await record({
+    roomId: room.id,
+    type: "READER_TIMEOUT",
+    actorId: current.id,
+    detail: `Demorou mais de ${drawSeconds} segundos para puxar a carta`,
+  });
+
+  await publishNotice({
+    roomId: room.id,
+    kind: "TIMEOUT",
+    title: `${current.name} demorou para puxar a carta`,
+    text: `Passou de ${drawSeconds} segundos sem carta na mesa, então quem lê agora é ${nextReader.name}.`,
+  });
+
+  return { moved: true as const, from: current.name, to: nextReader.name, reason };
+}
+
+export async function tickRound(input: { code: string }) {
   const room = await loadRoom(input.code);
 
   if (room.phase !== RoomPhase.Playing) {
-    return { revealed: false as const };
+    return { acted: false as const };
   }
 
+  const elapsedOver = (limit: number) =>
+    secondsLeft(room.round_started_at, limit, Date.now()) <= 0;
+
   if (room.round_phase === RoundPhase.Scoring) {
-    if (secondsLeft(room.round_started_at, scoringRescueSeconds, Date.now()) > 0) {
-      return { revealed: false as const };
+    if (!elapsedOver(scoringGrace)) {
+      return { acted: false as const };
     }
 
     await serverClient()
       .from("fl_rooms")
-      .update({ round_phase: RoundPhase.Reveal })
+      .update({ round_phase: RoundPhase.Reveal, round_started_at: new Date().toISOString() })
       .eq("id", room.id)
       .eq("round_phase", RoundPhase.Scoring);
 
-    return { revealed: false as const, rescued: true as const };
+    return { acted: true as const, what: "RESCUED" as const };
+  }
+
+  if (room.round_phase === RoundPhase.Idle) {
+    if (!elapsedOver(drawSeconds)) {
+      return { acted: false as const };
+    }
+
+    const outcome = await passReader(room, "SLOW_DRAW");
+
+    return outcome.moved
+      ? { acted: true as const, what: "READER_PASSED" as const }
+      : { acted: false as const };
+  }
+
+  if (room.round_phase === RoundPhase.Reveal) {
+    if (!elapsedOver(decideSeconds)) {
+      return { acted: false as const };
+    }
+
+    const reader = (await roster(room.id)).find(
+      (person) => person.id === room.reader_player_id,
+    );
+
+    if (!reader) {
+      return { acted: false as const };
+    }
+
+    const { data: secret } = await serverClient()
+      .from("fl_player_secrets")
+      .select("access_token")
+      .eq("player_id", reader.id)
+      .maybeSingle();
+
+    if (!secret) {
+      return { acted: false as const };
+    }
+
+    await publishNotice({
+      roomId: room.id,
+      kind: "TIMEOUT",
+      title: "Rodada fechada pelo tempo",
+      text: `${reader.name} passou de ${decideSeconds} segundos conferindo, então os peixes foram dados do jeito que estavam.`,
+    });
+
+    await confirmRound({ code: input.code, token: secret.access_token as string });
+
+    return { acted: true as const, what: "AUTO_CLOSED" as const };
   }
 
   if (room.round_phase !== RoundPhase.Writing) {
-    return { revealed: false as const };
+    return { acted: false as const };
   }
 
-  if (secondsLeft(room.round_started_at, room.write_seconds, Date.now()) > 0) {
-    return { revealed: false as const };
+  if (!elapsedOver(room.write_seconds)) {
+    return { acted: false as const };
   }
 
   const rows = await answersFor(room.id, room.round_number);
+  const people = await roster(room.id);
 
   if (rows.length === 0) {
     await serverClient()
       .from("fl_rooms")
-      .update({ round_phase: RoundPhase.Idle, current_prompt_id: null })
-      .eq("id", room.id);
+      .update({
+        round_phase: RoundPhase.Idle,
+        round_started_at: new Date().toISOString(),
+        current_prompt_id: null,
+      })
+      .eq("id", room.id)
+      .eq("round_phase", RoundPhase.Writing);
 
     await publishNotice({
       roomId: room.id,
       kind: "TIMEOUT",
       title: "Ninguém escreveu nada",
-      text: "O tempo acabou e a lousa estava vazia, então a carta foi descartada.",
+      text: "O tempo acabou com a lousa vazia, então a carta foi descartada.",
     });
 
-    return { revealed: false as const };
+    return { acted: true as const, what: "DISCARDED" as const };
   }
 
   await revealRound({ code: input.code, forced: true });
@@ -499,8 +610,8 @@ export async function expireWriting(input: { code: string }) {
     roomId: room.id,
     kind: "TIMEOUT",
     title: "Tempo esgotado",
-    text: `A lousa fechou com ${answered(rows.length, (await roster(room.id)).length)}.`,
+    text: `A lousa fechou com ${answered(rows.length, people.length)}.`,
   });
 
-  return { revealed: true as const };
+  return { acted: true as const, what: "REVEALED" as const };
 }

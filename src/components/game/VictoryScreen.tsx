@@ -54,7 +54,10 @@ export function VictoryScreen({ people, winnerId, myId, onExit }: VictoryScreenP
       </div>
 
       <section className="mt-7">
-        <h2 className="display mb-3 text-lg text-ink">Placar final</h2>
+        <h2 className="display mb-1 text-lg text-ink">Placar final</h2>
+        <p className="mb-3 text-xs font-semibold text-ink/55">
+          Peixe é ponto negativo, então quem tem menos fica na frente.
+        </p>
         <ul className="flex flex-col gap-2">
           {ranking.map((person, index) => (
             <li

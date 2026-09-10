@@ -1,7 +1,5 @@
 import type { AnswerGroup } from "@/lib/game/grouping";
 
-export const fishPerMiss = 1;
-
 export interface RoundOutcome {
   majoritySize: number;
   savedPlayerIds: string[];

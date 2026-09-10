@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { FishStrike } from "@/components/game/FishStrike";
 import { HomeScreen } from "@/components/game/HomeScreen";
+import { HowToPlay } from "@/components/game/HowToPlay";
 import { JoinScreen } from "@/components/game/JoinScreen";
 import { LobbyScreen } from "@/components/game/LobbyScreen";
 import { NoticeModal } from "@/components/game/NoticeModal";
@@ -12,9 +14,20 @@ import { VictoryScreen } from "@/components/game/VictoryScreen";
 import { useNow } from "@/hooks/useNow";
 import { useRoom } from "@/hooks/useRoom";
 import { useSession } from "@/hooks/useSession";
+import { useTableFeedback } from "@/hooks/useTableFeedback";
 import { api } from "@/lib/api";
+import { askToNotify } from "@/lib/notify";
+import { applyMuted, sound, unlockSound } from "@/lib/sound";
+import {
+  prefsSnapshot,
+  rememberMuted,
+  rememberTutorialSeen,
+  serverPrefsSnapshot,
+  subscribePrefs,
+} from "@/lib/prefs";
 import { groupAnswers, type AnswerGroup } from "@/lib/game/grouping";
 import { secondsLeft } from "@/lib/game/rotation";
+import { decideSeconds, drawSeconds, scoringGrace } from "@/lib/game/limits";
 import { promptById, type DeckKind } from "@/data/prompts";
 import { RoomPhase, RoundPhase, type RoomRow } from "@/types/room";
 import type { RecentSeat } from "@/lib/session";
@@ -30,6 +43,10 @@ export function GameApp() {
   const [seenNoticeId, setSeenNoticeId] = useState<string | null>(null);
   const [seenReportId, setSeenReportId] = useState<string | null>(null);
   const [confirmingLeave, setConfirmingLeave] = useState(false);
+  const [askedRules, setAskedRules] = useState(false);
+  const prefs = useSyncExternalStore(subscribePrefs, prefsSnapshot, serverPrefsSnapshot);
+  const showRules = askedRules || !prefs.tutorialSeen;
+  const quiet = prefs.muted;
 
   const { state, refresh } = useRoom(session?.code ?? null, session?.accessToken ?? null);
   const now = useNow(1000);
@@ -38,6 +55,18 @@ export function GameApp() {
   useEffect(() => {
     clockRef.current = state?.room ?? null;
   }, [state?.room]);
+
+  useEffect(() => {
+    applyMuted(prefs.muted);
+  }, [prefs.muted]);
+
+  useEffect(() => {
+    const prime = () => unlockSound();
+
+    window.addEventListener("pointerdown", prime, { once: true });
+
+    return () => window.removeEventListener("pointerdown", prime);
+  }, []);
 
   useEffect(() => {
     if (!error) {
@@ -59,12 +88,20 @@ export function GameApp() {
     const check = async () => {
       const room = clockRef.current;
 
-      if (
-        !room ||
-        room.phase !== RoomPhase.Playing ||
-        room.round_phase !== RoundPhase.Writing ||
-        secondsLeft(room.round_started_at, room.write_seconds, Date.now()) > 0
-      ) {
+      if (!room || room.phase !== RoomPhase.Playing) {
+        return;
+      }
+
+      const limits: Record<string, number> = {
+        [RoundPhase.Idle]: drawSeconds,
+        [RoundPhase.Writing]: room.write_seconds,
+        [RoundPhase.Reveal]: decideSeconds,
+        [RoundPhase.Scoring]: scoringGrace,
+      };
+
+      const limit = limits[room.round_phase];
+
+      if (limit === undefined || secondsLeft(room.round_started_at, limit, Date.now()) > 0) {
         return;
       }
 
@@ -93,6 +130,33 @@ export function GameApp() {
       setBusy(false);
     }
   }, []);
+
+  const rulesGate = showRules ? (
+    <HowToPlay
+      onClose={() => {
+        setAskedRules(false);
+        rememberTutorialSeen();
+      }}
+    />
+  ) : null;
+
+  const watched = useMemo(
+    () => ({
+      phase: state?.room.phase ?? "",
+      roundPhase: state?.room.round_phase ?? "",
+      readerId: state?.room.reader_player_id ?? null,
+      report: state?.room.last_round ?? null,
+      myId: state?.meId ?? null,
+    }),
+    [
+      state?.room.phase,
+      state?.room.round_phase,
+      state?.room.reader_player_id,
+      state?.room.last_round,
+      state?.meId,
+    ],
+  );
+  const feedback = useTableFeedback(watched);
 
   const leave = useCallback(() => {
     clear();
@@ -140,7 +204,9 @@ export function GameApp() {
     }
 
     return (
-      <HomeScreen
+      <>
+        {rulesGate}
+        <HomeScreen
         deck={deck}
         onDeck={setDeck}
         seats={seats}
@@ -154,8 +220,10 @@ export function GameApp() {
             accessToken: seat.accessToken,
           })
         }
-        onForget={forget}
-      />
+          onForget={forget}
+          onRules={() => setAskedRules(true)}
+        />
+      </>
     );
   }
 
@@ -179,6 +247,8 @@ export function GameApp() {
   if (state.room.phase === RoomPhase.Finished) {
     return (
       <>
+        {rulesGate}
+
         {visibleReport ? (
           <RoundReportModal
             report={visibleReport}
@@ -201,6 +271,8 @@ export function GameApp() {
   if (state.room.phase === RoomPhase.Lobby) {
     return (
       <>
+        {rulesGate}
+
         {visibleNotice ? (
           <NoticeModal notice={visibleNotice} onClose={() => setSeenNoticeId(visibleNotice.id)} />
         ) : null}
@@ -211,7 +283,14 @@ export function GameApp() {
           isHost={me?.is_host ?? false}
           busy={busy}
           error={error}
-          onStart={() => run(() => api.start(session.code, session.accessToken))}
+          onStart={() =>
+            run(async () => {
+              void askToNotify();
+              unlockSound();
+              await api.start(session.code, session.accessToken);
+            })
+          }
+          onRules={() => setAskedRules(true)}
           onLeave={() => setConfirmingLeave(true)}
         />
 
@@ -256,9 +335,13 @@ export function GameApp() {
 
   return (
     <>
+      {rulesGate}
+
+      {feedback.strike ? <FishStrike onDone={feedback.clearStrike} /> : null}
+
       {visibleNotice ? (
         <NoticeModal notice={visibleNotice} onClose={() => setSeenNoticeId(visibleNotice.id)} />
-      ) : visibleReport ? (
+      ) : feedback.strike ? null : visibleReport ? (
         <RoundReportModal
           report={visibleReport}
           people={state.players}
@@ -282,8 +365,19 @@ export function GameApp() {
         isHost={me?.is_host ?? false}
         busy={busy}
         error={error}
+        quiet={quiet}
+        onQuiet={(next) => {
+          rememberMuted(next);
+          applyMuted(next);
+
+          if (!next) {
+            sound.bubble();
+          }
+        }}
+        onRules={() => setAskedRules(true)}
         onDraw={() =>
           run(async () => {
+            sound.tap();
             await api.draw(session.code, session.accessToken);
             await refresh();
           })
@@ -291,6 +385,7 @@ export function GameApp() {
         onAnswer={(body) =>
           run(async () => {
             await api.answer(session.code, session.accessToken, body);
+            sound.wrote();
             await refresh();
           })
         }

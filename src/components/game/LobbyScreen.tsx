@@ -16,6 +16,7 @@ interface LobbyScreenProps {
   busy: boolean;
   error: string | null;
   onStart: () => void;
+  onRules: () => void;
   onLeave: () => void;
 }
 
@@ -32,6 +33,7 @@ export function LobbyScreen({
   busy,
   error,
   onStart,
+  onRules,
   onLeave,
 }: LobbyScreenProps) {
   const enough = people.length >= minPlayers;
@@ -68,13 +70,22 @@ export function LobbyScreen({
         >
           ← Sair
         </button>
-        <Wordmark size="sm" />
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onRules}
+            className="display cursor-pointer rounded-full border-2 border-ink bg-paper px-3 py-1 text-xs text-ink transition-colors hover:bg-foam"
+          >
+            Como se joga?
+          </button>
+          <Wordmark size="sm" />
+        </div>
       </header>
 
       <div className="mb-6">
         <RoomCode
           code={room.code}
-          hint={`baralho ${deckLabels[room.deck]} · até ${maxPlayers} pessoas`}
+          hint={`Baralho ${deckLabels[room.deck]} · até ${maxPlayers} pessoas`}
         />
       </div>
 

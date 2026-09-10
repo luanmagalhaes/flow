@@ -1,18 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Baloo_2, Inter } from "next/font/google";
+import { Fredoka, Plus_Jakarta_Sans } from "next/font/google";
 import { brand } from "@/data/copy";
 import "./globals.css";
 
-const baloo = Baloo_2({
+const fredoka = Fredoka({
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  variable: "--font-baloo",
+  weight: ["500", "600", "700"],
+  variable: "--font-fredoka",
   display: "swap",
 });
 
-const inter = Inter({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-jakarta",
   display: "swap",
 });
 
@@ -37,7 +38,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" className={`${baloo.variable} ${inter.variable} h-full`}>
+    <html lang="pt-BR" className={`${fredoka.variable} ${jakarta.variable} h-full`}>
       <body className="min-h-full antialiased" suppressHydrationWarning>
         {children}
       </body>

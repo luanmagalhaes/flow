@@ -21,10 +21,18 @@ export function RoundReportModal({ report, people, myId, onClose }: RoundReportM
   const title = report.everyoneAlone
     ? "Ninguém seguiu o fluxo"
     : hooked
-      ? "Você pegou peixe"
+      ? "Você levou peixe"
       : saved
         ? "Você seguiu o fluxo"
         : `Rodada ${report.roundNumber}`;
+
+  const verdict = report.everyoneAlone
+    ? "Ninguém escreveu igual a ninguém, então a mesa toda leva 1 peixe de desvantagem."
+    : hooked
+      ? "Você escreveu diferente da maioria. Peixe na mão é ponto negativo: quanto mais peixe, pior o seu placar."
+      : saved
+        ? "Você escreveu igual à maioria e não levou peixe. Mão vazia é o que você quer."
+        : null;
 
   return (
     <Modal
@@ -43,6 +51,16 @@ export function RoundReportModal({ report, people, myId, onClose }: RoundReportM
         </Button>
       }
     >
+      {verdict ? (
+        <p
+          className={`mb-3 rounded-2xl border-2 border-ink px-3 py-2.5 text-xs font-semibold leading-snug ${
+            hooked || report.everyoneAlone ? "bg-koi-soft text-ink" : "bg-cyan text-ink"
+          }`}
+        >
+          {verdict}
+        </p>
+      ) : null}
+
       <ul className="flex flex-col gap-2">
         {report.groups.map((group) => {
           const safe = group.playerIds.length === report.majoritySize && report.majoritySize > 1;
@@ -73,10 +91,10 @@ export function RoundReportModal({ report, people, myId, onClose }: RoundReportM
 
       <p className="mt-4 rounded-2xl border-2 border-ink bg-foam px-3 py-2.5 text-center text-xs font-semibold text-ink">
         {report.everyoneAlone
-          ? `A mesa toda pegou ${fish(1)} cada.`
+          ? `A mesa toda levou ${fish(1)} de desvantagem.`
           : `Maioria de ${report.majoritySize} · ${caught(report.hookedPlayerIds.length)}`}
         {" · "}
-        cardume com {fish(report.fishLeft)}
+        sobram {fish(report.fishLeft)} no cardume
       </p>
     </Modal>
   );
