@@ -192,3 +192,34 @@ button:disabled {
     transition-duration: 0.01ms !important;
   }
 }
+
+@keyframes fish-cross {
+  from { transform: translate3d(120vw, 0, 0) rotate(3deg); }
+  to { transform: translate3d(-30vw, 0, 0) rotate(-3deg); }
+}
+
+@keyframes fish-dive {
+  0% { transform: translate3d(-60%, 40%, 0) rotate(-18deg) scale(0.6); opacity: 0; }
+  60% { transform: translate3d(0, -4%, 0) rotate(4deg) scale(1.06); opacity: 1; }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); opacity: 1; }
+}
+
+@keyframes curtain-out {
+  from { transform: translate3d(0, 0, 0); opacity: 1; }
+  to { transform: translate3d(0, -100%, 0); opacity: 1; }
+}
+
+@utility animate-fish-cross {
+  animation: fish-cross linear infinite;
+  will-change: transform;
+}
+
+@utility animate-fish-dive {
+  animation: fish-dive 820ms var(--ease-swing) both;
+  will-change: transform, opacity;
+}
+
+@utility animate-curtain-out {
+  animation: curtain-out 620ms var(--ease-snap) forwards;
+  will-change: transform;
+}

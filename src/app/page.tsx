@@ -1,5 +1,10 @@
+import { AppShell } from "@/components/layout/AppShell";
 import { GameApp } from "@/components/game/GameApp";
 
 export default function Home() {
-  return <GameApp />;
+  return (
+    <AppShell>
+      <GameApp />
+    </AppShell>
+  );
 }
