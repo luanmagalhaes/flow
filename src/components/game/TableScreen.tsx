@@ -149,14 +149,14 @@ export function TableScreen({
             title={quiet ? "Ligar os sons" : "Desligar os sons"}
             className="display cursor-pointer rounded-full border-2 border-ink bg-paper px-2.5 py-1 text-xs text-ink transition-colors hover:bg-foam"
           >
-            {quiet ? "som off" : "som on"}
+            {quiet ? "Som off" : "Som on"}
           </button>
           <button
             type="button"
             onClick={onRules}
             className="display cursor-pointer rounded-full border-2 border-ink bg-paper px-2.5 py-1 text-xs text-ink transition-colors hover:bg-foam"
           >
-            regras
+            Regras
           </button>
           <Wordmark size="sm" className="hidden opacity-60 sm:inline-block" />
         </div>

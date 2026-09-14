@@ -49,7 +49,7 @@ export function RevealBoard({
             <li>
               <strong className="text-ink">É a mesma resposta?</strong> Toque em{" "}
               <span className="display rounded-md bg-paper px-1.5 py-0.5 ring-1 ring-ink/20">
-                é a mesma
+                É a mesma
               </span>{" "}
               nos dois grupos e eles viram um. Serve para “cachorro” e “cão”.
             </li>
@@ -93,7 +93,7 @@ export function RevealBoard({
                         active ? "bg-ink text-paper" : "bg-paper text-ink hover:bg-foam"
                       }`}
                     >
-                      {picked && !active ? "juntar aqui" : active ? "juntar com qual?" : "é a mesma"}
+                      {picked && !active ? "Juntar aqui" : active ? "Juntar com qual?" : "É a mesma"}
                     </button>
                   ) : (
                     <span className="display flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-ink text-xs text-paper">
@@ -157,7 +157,7 @@ export function RevealBoard({
               onClick={() => setPicked(null)}
               className="display cursor-pointer rounded-xl px-3 py-2 text-xs text-ink/55 transition-colors hover:text-ink"
             >
-              cancelar a junção
+              Cancelar a junção
             </button>
           ) : null}
           <Button variant="ink" size="lg" fullWidth disabled={busy} onClick={onConfirm}>
