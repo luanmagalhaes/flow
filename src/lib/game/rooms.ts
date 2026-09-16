@@ -1,4 +1,5 @@
 import { ServiceError } from "@/lib/errors";
+import { wipeChat } from "@/lib/game/chat";
 import { serverClient } from "@/lib/supabase";
 import { promptsForDeck, type DeckKind } from "@/data/prompts";
 import { leaders } from "@/lib/game/scoring";
@@ -266,6 +267,10 @@ async function detach(room: RoomRow, target: PlayerRow) {
     patch.winner_player_id = front[0]?.playerId ?? null;
   }
 
+  if (patch.phase === RoomPhase.Finished) {
+    await wipeChat(room.id);
+  }
+
   if (Object.keys(patch).length > 0) {
     await client.from("fl_rooms").update(patch).eq("id", room.id);
   }
@@ -320,6 +325,7 @@ export async function leaveRoom(input: { code: string; token: string }) {
   const people = await roster(room.id);
 
   if (people.length === 1) {
+    await wipeChat(room.id);
     await serverClient().from("fl_rooms").delete().eq("id", room.id);
 
     return { left: true as const, lastOne: true as const };

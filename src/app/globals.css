@@ -223,3 +223,14 @@ button:disabled {
   animation: curtain-out 620ms var(--ease-snap) forwards;
   will-change: transform;
 }
+
+@keyframes pop-in {
+  0% { transform: scale(0); opacity: 0; }
+  65% { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@utility animate-pop-in {
+  animation: pop-in 320ms var(--ease-swing) both;
+  will-change: transform, opacity;
+}

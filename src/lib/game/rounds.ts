@@ -22,6 +22,7 @@ import {
 import { normalize } from "@/lib/game/text";
 import { answered, caught } from "@/utils/plural";
 import { RoomPhase, RoundPhase, type RoomRow, type RoundReport } from "@/types/room";
+import { wipeChat } from "@/lib/game/chat";
 
 function assertPlaying(room: RoomRow): void {
   if (room.phase !== RoomPhase.Playing) {
@@ -308,6 +309,8 @@ async function finishByPrompts(room: RoomRow) {
   const people = await roster(room.id);
   const front = leaders(people.map((person) => ({ playerId: person.id, fish: person.fish })));
 
+  await wipeChat(room.id);
+
   await client
     .from("fl_rooms")
     .update({
@@ -404,6 +407,8 @@ export async function confirmRound(input: { code: string; token: string }) {
   if (over) {
     const fresh = await roster(room.id);
     const front = leaders(fresh.map((person) => ({ playerId: person.id, fish: person.fish })));
+
+    await wipeChat(room.id);
 
     await client
       .from("fl_rooms")

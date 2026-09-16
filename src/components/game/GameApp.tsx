@@ -6,6 +6,7 @@ import { FishStrike } from "@/components/game/FishStrike";
 import { HomeScreen } from "@/components/game/HomeScreen";
 import { HowToPlay } from "@/components/game/HowToPlay";
 import { JoinScreen } from "@/components/game/JoinScreen";
+import { ChatBubble } from "@/components/game/ChatBubble";
 import { LobbyScreen } from "@/components/game/LobbyScreen";
 import { NoticeModal } from "@/components/game/NoticeModal";
 import { RoundReportModal } from "@/components/game/RoundReportModal";
@@ -277,6 +278,7 @@ export function GameApp() {
           <NoticeModal notice={visibleNotice} onClose={() => setSeenNoticeId(visibleNotice.id)} />
         ) : null}
 
+        <ChatBubble code={session.code} token={session.accessToken} myId={state.meId} />
         <LobbyScreen
           room={state.room}
           people={state.players}
@@ -349,6 +351,8 @@ export function GameApp() {
           onClose={() => setSeenReportId(visibleReport.id)}
         />
       ) : null}
+
+      <ChatBubble code={session.code} token={session.accessToken} myId={state.meId} />
 
       <TableScreen
         room={state.room}

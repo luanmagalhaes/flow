@@ -1,4 +1,4 @@
-import type { EventRow, PlayerRow, RevealedAnswer, RoomRow } from "@/types/room";
+import type { ChatMessage, EventRow, PlayerRow, RevealedAnswer, RoomRow } from "@/types/room";
 import type { AnswerGroup } from "@/lib/game/grouping";
 import type { DeckKind } from "@/data/prompts";
 import {
@@ -63,6 +63,54 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string):
 }
 
 export const api = {
+  chat: (code: string, token: string) =>
+    request<{ messages: ChatMessage[] }>(`/api/rooms/${code}/chat`, { method: "GET" }, token),
+
+  sendText: (code: string, token: string, body: string) =>
+    request<ChatMessage>(
+      `/api/rooms/${code}/chat`,
+      { method: "POST", body: JSON.stringify({ body }) },
+      token,
+    ),
+
+  sendAudio: async (code: string, token: string, blob: Blob, seconds: number) => {
+    let response: Response;
+
+    try {
+      response = await fetch(`/api/rooms/${code}/chat`, {
+        method: "POST",
+        body: blob,
+        headers: {
+          "Content-Type": blob.type,
+          "x-player-token": token,
+          "x-audio-seconds": String(Math.round(seconds)),
+        },
+      });
+    } catch {
+      throw new Error(networkMessage(typeof navigator === "undefined" || navigator.onLine !== false));
+    }
+
+    let payload: unknown = null;
+
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok) {
+      const given = (payload as { error?: string } | null)?.error;
+
+      throw new Error(given ?? messageForStatus(response.status));
+    }
+
+    if (payload === null) {
+      throw new Error(unreadableMessage);
+    }
+
+    return payload as ChatMessage;
+  },
+
   createRoom: (hostName: string, deck: DeckKind) =>
     request<JoinResponse>("/api/rooms", {
       method: "POST",
