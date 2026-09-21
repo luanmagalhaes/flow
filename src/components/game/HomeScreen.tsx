@@ -17,6 +17,7 @@ interface HomeScreenProps {
   onResume: (seat: RecentSeat) => void;
   onForget: (code: string) => void;
   onRules: () => void;
+  onHistory: () => void;
 }
 
 const decks: { key: DeckKind; label: string; hint: string }[] = [
@@ -34,6 +35,7 @@ export function HomeScreen({
   onResume,
   onForget,
   onRules,
+  onHistory,
 }: HomeScreenProps) {
   return (
     <Screen
@@ -45,13 +47,22 @@ export function HomeScreen({
           <Button variant="foam" size="lg" fullWidth onClick={onJoin}>
             Entrar com código
           </Button>
-          <button
-            type="button"
-            onClick={onRules}
-            className="display cursor-pointer rounded-xl px-3 py-1.5 text-sm text-ink/60 transition-colors hover:text-ink"
-          >
-            Como se joga?
-          </button>
+          <div className="flex items-center justify-center gap-4">
+            <button
+              type="button"
+              onClick={onRules}
+              className="display cursor-pointer rounded-xl px-3 py-1.5 text-sm text-ink/60 transition-colors hover:text-ink"
+            >
+              Como se joga?
+            </button>
+            <button
+              type="button"
+              onClick={onHistory}
+              className="display cursor-pointer rounded-xl px-3 py-1.5 text-sm text-ink/60 transition-colors hover:text-ink"
+            >
+              Histórico
+            </button>
+          </div>
         </div>
       }
     >

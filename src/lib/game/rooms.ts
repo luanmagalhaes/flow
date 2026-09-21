@@ -14,6 +14,7 @@ import {
   publishNotice,
   record,
   roster,
+  saveMatch,
 } from "@/lib/game/shared";
 import { RoomPhase, RoundPhase, type PlayerRow, type RoomRow } from "@/types/room";
 
@@ -265,6 +266,8 @@ async function detach(room: RoomRow, target: PlayerRow) {
     patch.phase = RoomPhase.Finished;
     patch.finished_at = new Date().toISOString();
     patch.winner_player_id = front[0]?.playerId ?? null;
+
+    await saveMatch(room, others, front[0]?.playerId ?? null);
   }
 
   if (patch.phase === RoomPhase.Finished) {

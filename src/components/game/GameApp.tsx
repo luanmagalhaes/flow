@@ -6,6 +6,7 @@ import { FishStrike } from "@/components/game/FishStrike";
 import { HomeScreen } from "@/components/game/HomeScreen";
 import { HowToPlay } from "@/components/game/HowToPlay";
 import { JoinScreen } from "@/components/game/JoinScreen";
+import { HistoryScreen } from "@/components/history/HistoryScreen";
 import { ChatBubble } from "@/components/game/ChatBubble";
 import { LobbyScreen } from "@/components/game/LobbyScreen";
 import { NoticeModal } from "@/components/game/NoticeModal";
@@ -33,7 +34,7 @@ import { promptById, type DeckKind } from "@/data/prompts";
 import { RoomPhase, RoundPhase, type RoomRow } from "@/types/room";
 import type { RecentSeat } from "@/lib/session";
 
-type View = "HOME" | "CREATE" | "JOIN";
+type View = "HOME" | "CREATE" | "JOIN" | "HISTORY";
 
 export function GameApp() {
   const { session, seats, save, clear, forget, seatFor } = useSession();
@@ -165,6 +166,10 @@ export function GameApp() {
   }, [clear]);
 
   if (!session) {
+    if (view === "HISTORY") {
+      return <HistoryScreen onBack={() => setView("HOME")} />;
+    }
+
     if (view === "CREATE" || view === "JOIN") {
       return (
         <JoinScreen
@@ -223,6 +228,7 @@ export function GameApp() {
         }
           onForget={forget}
           onRules={() => setAskedRules(true)}
+          onHistory={() => setView("HISTORY")}
         />
       </>
     );

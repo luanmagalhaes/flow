@@ -18,6 +18,7 @@ import {
   publishNotice,
   record,
   roster,
+  saveMatch,
 } from "@/lib/game/shared";
 import { normalize } from "@/lib/game/text";
 import { answered, caught } from "@/utils/plural";
@@ -329,6 +330,8 @@ async function finishByPrompts(room: RoomRow) {
     detail: "As cartas do baralho acabaram",
   });
 
+  await saveMatch(room, people, front[0]?.playerId ?? null);
+
   return { winnerId: front[0]?.playerId ?? null };
 }
 
@@ -421,6 +424,8 @@ export async function confirmRound(input: { code: string; token: string }) {
         last_round: report,
       })
       .eq("id", room.id);
+
+    await saveMatch(room, fresh, front[0]?.playerId ?? null);
 
     await record({
       roomId: room.id,

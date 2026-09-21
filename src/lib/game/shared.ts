@@ -118,3 +118,21 @@ export function assertReader(room: RoomRow, player: PlayerRow): void {
     throw new ServiceError("Só quem leu a carta pode fazer isso", 403);
   }
 }
+
+export async function saveMatch(
+  room: RoomRow,
+  people: Array<{ id: string; name: string; fish: number }>,
+  winnerId: string | null,
+): Promise<void> {
+  await serverClient()
+    .from("fl_matches")
+    .insert({
+      room_code: room.code,
+      winner_name: people.find((person) => person.id === winnerId)?.name ?? null,
+      rounds: room.round_number ?? 0,
+      players: people.map((person) => ({
+        name: person.name,
+        score: person.fish,
+      })),
+    });
+}
