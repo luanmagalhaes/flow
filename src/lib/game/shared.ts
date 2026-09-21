@@ -10,14 +10,17 @@ export function createToken(): string {
 }
 
 export function createCode(): string {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "";
+  return String(10 + Math.floor(Math.random() * 90));
+}
 
-  for (let index = 0; index < 6; index += 1) {
-    code += alphabet[Math.floor(Math.random() * alphabet.length)];
+export async function nextRoomCode(): Promise<string> {
+  const { data, error } = await serverClient().rpc("fl_generate_code");
+
+  if (error || typeof data !== "string") {
+    return createCode();
   }
 
-  return code;
+  return data;
 }
 
 export async function loadRoom(code: string): Promise<RoomRow> {

@@ -5,7 +5,7 @@ import { promptsForDeck, type DeckKind } from "@/data/prompts";
 import { leaders } from "@/lib/game/scoring";
 import { nextSeat } from "@/lib/game/rotation";
 import {
-  createCode,
+  nextRoomCode,
   createToken,
   loadPlayer,
   loadRoom,
@@ -85,7 +85,7 @@ export async function createRoom(input: { hostName: string; deck: DeckKind }) {
   const client = serverClient();
 
   for (let attempt = 0; attempt < 6; attempt += 1) {
-    const code = createCode();
+    const code = await nextRoomCode();
     const { data, error } = await client
       .from("fl_rooms")
       .insert({ code, deck: input.deck })
