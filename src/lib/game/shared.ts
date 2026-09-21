@@ -124,6 +124,10 @@ export async function saveMatch(
   people: Array<{ id: string; name: string; fish: number }>,
   winnerId: string | null,
 ): Promise<void> {
+  if (room.is_test) {
+    return;
+  }
+
   await serverClient()
     .from("fl_matches")
     .insert({

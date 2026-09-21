@@ -1,5 +1,6 @@
 import { handle } from "@/app/api/_shared";
 import { createRoom } from "@/lib/game/rooms";
+import { looksLikeRobot } from "@/lib/game/testDetection";
 import type { DeckKind } from "@/data/prompts";
 
 const decks: DeckKind[] = ["GENERAL", "SPICY", "MIXED"];
@@ -9,6 +10,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const deck = decks.includes(body.deck) ? (body.deck as DeckKind) : "GENERAL";
 
-    return createRoom({ hostName: String(body.hostName ?? ""), deck });
+    return createRoom({
+      hostName: String(body.hostName ?? ""),
+      deck,
+      isTest: looksLikeRobot(request),
+    });
   });
 }

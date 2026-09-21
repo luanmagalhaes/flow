@@ -82,14 +82,18 @@ async function attach(room: RoomRow, name: string, isHost: boolean) {
   return { player: player as PlayerRow, accessToken };
 }
 
-export async function createRoom(input: { hostName: string; deck: DeckKind }) {
+export async function createRoom(input: {
+  hostName: string;
+  deck: DeckKind;
+  isTest?: boolean;
+}) {
   const client = serverClient();
 
   for (let attempt = 0; attempt < 6; attempt += 1) {
     const code = await nextRoomCode();
     const { data, error } = await client
       .from("fl_rooms")
-      .insert({ code, deck: input.deck })
+      .insert({ code, deck: input.deck, is_test: input.isTest ?? false })
       .select("*")
       .maybeSingle();
 

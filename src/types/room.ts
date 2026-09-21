@@ -53,6 +53,7 @@ export interface RoomRow {
   reader_player_id: string | null;
   winner_player_id: string | null;
   round_number: number;
+  is_test: boolean;
   round_phase: RoundPhase;
   current_prompt_id: string | null;
   round_started_at: string | null;
