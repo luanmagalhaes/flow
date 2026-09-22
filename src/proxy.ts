@@ -1,6 +1,19 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const aliases: Record<string, string> = {
+  "/history": "/historico",
+  "/historic": "/historico",
+  "/historia": "/historico",
+  "/ranking": "/historico",
+  "/partidas": "/historico",
+  "/home": "/",
+  "/inicio": "/",
+  "/room": "/",
+  "/rooms": "/",
+  "/salas": "/",
+};
+
 function normalizePath(pathname: string): string {
   let readable = pathname;
 
@@ -10,10 +23,17 @@ function normalizePath(pathname: string): string {
     readable = pathname;
   }
 
-  return readable
+  const lowered = readable
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase();
+
+  const trimmed =
+    lowered.length > 1 && lowered.endsWith("/")
+      ? lowered.slice(0, -1)
+      : lowered;
+
+  return aliases[trimmed] ?? trimmed;
 }
 
 export function proxy(request: NextRequest) {

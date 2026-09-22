@@ -77,7 +77,7 @@ export function RoomCode({ code, hint }: RoomCodeProps) {
         type="button"
         onClick={onCopy}
         aria-label={`Copiar o código ${code}`}
-        className="display mt-1 block w-full cursor-pointer select-all rounded-2xl px-2 py-1 text-5xl tracking-[0.18em] text-koi transition-colors hover:bg-foam active:bg-foam sm:text-6xl"
+        className="display mt-2 block w-full cursor-pointer select-all rounded-2xl px-2 pb-2 pt-1 text-5xl leading-tight tracking-[0.18em] text-koi transition-colors hover:bg-foam active:bg-foam sm:text-6xl"
       >
         {code}
       </button>
