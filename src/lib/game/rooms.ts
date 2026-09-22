@@ -1,3 +1,4 @@
+import { randomFace } from "@/data/faces";
 import { ServiceError } from "@/lib/errors";
 import { wipeChat } from "@/lib/game/chat";
 import { serverClient } from "@/lib/supabase";
@@ -59,7 +60,13 @@ async function attach(room: RoomRow, name: string, isHost: boolean) {
   const seat = await nextFreeSeat(room.id);
   const { data: player, error } = await client
     .from("fl_players")
-    .insert({ room_id: room.id, name: trimmed, seat, is_host: isHost })
+    .insert({
+      room_id: room.id,
+      name: trimmed,
+      seat,
+      is_host: isHost,
+      emoji: randomFace(await facesTaken(room.id)),
+    })
     .select("*")
     .single();
 
@@ -353,4 +360,16 @@ export async function leaveRoom(input: { code: string; token: string }) {
   });
 
   return { left: true as const, lastOne: false as const };
+}
+
+
+async function facesTaken(roomId: string): Promise<string[]> {
+  const { data } = await serverClient()
+    .from("fl_players")
+    .select("emoji")
+    .eq("room_id", roomId);
+
+  return ((data ?? []) as { emoji: string | null }[])
+    .map((row) => row.emoji)
+    .filter((emoji): emoji is string => Boolean(emoji));
 }

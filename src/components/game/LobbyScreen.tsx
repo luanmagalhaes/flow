@@ -1,5 +1,7 @@
 "use client";
 
+import { AvatarPicker } from "@/components/game/AvatarPicker";
+import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Fish } from "@/components/ui/Fish";
 import { RoomCode } from "@/components/game/RoomCode";
@@ -12,6 +14,10 @@ import type { PlayerRow, RoomRow } from "@/types/room";
 interface LobbyScreenProps {
   room: RoomRow;
   people: PlayerRow[];
+  code: string;
+  token: string;
+  meId: string | null;
+  onRefresh: () => void;
   isHost: boolean;
   busy: boolean;
   error: string | null;
@@ -29,6 +35,10 @@ const deckLabels: Record<RoomRow["deck"], string> = {
 export function LobbyScreen({
   room,
   people,
+  code,
+  token,
+  meId,
+  onRefresh,
   isHost,
   busy,
   error,
@@ -36,6 +46,7 @@ export function LobbyScreen({
   onRules,
   onLeave,
 }: LobbyScreenProps) {
+  const me = people.find((person) => person.id === meId) ?? null;
   const enough = people.length >= minPlayers;
 
   return (
@@ -98,12 +109,23 @@ export function LobbyScreen({
         </div>
 
         <ul className="flex flex-col gap-2">
+          {me ? (
+            <li className="list-none">
+              <AvatarPicker code={code} token={token} me={me} onDone={onRefresh} />
+            </li>
+          ) : null}
+
           {people.map((person) => (
             <li
               key={person.id}
               className="flex items-center gap-3 rounded-2xl border-2 border-ink bg-paper p-3"
             >
-              <Fish className="w-8 shrink-0" tone={person.is_host ? "koi" : "soft"} />
+              <Avatar
+                name={person.name}
+                photo={person.avatar}
+                emoji={person.emoji}
+                size="sm"
+              />
               <span className="display min-w-0 flex-1 truncate text-ink">{person.name}</span>
               {person.is_host ? (
                 <span className="display shrink-0 rounded-full border-2 border-ink bg-cyan px-2 py-0.5 text-[0.6rem] uppercase tracking-wider text-ink">

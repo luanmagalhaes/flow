@@ -69,6 +69,8 @@ export interface PlayerRow {
   seat: number;
   is_host: boolean;
   fish: number;
+  avatar: string | null;
+  emoji: string | null;
 }
 
 export interface RevealedAnswer {
