@@ -235,7 +235,7 @@ export function ChatBubble({ code, token, myId }: ChatBubbleProps) {
                     {message.kind === "AUDIO" && message.audio_path ? (
                       <audio
                         controls
-                        preload="none"
+                        preload="auto"
                         src={message.audio_path}
                         className="mt-0.5 h-9 w-52 max-w-full"
                       />

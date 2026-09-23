@@ -1,5 +1,7 @@
 "use client";
 
+import { hushPage } from "@/lib/audio";
+import { withDuration } from "@/lib/webm";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type RecorderStage = "IDLE" | "RECORDING" | "REVIEW";
@@ -79,6 +81,7 @@ export function useRecorder(maxSeconds: number) {
     let stream: MediaStream;
 
     try {
+      hushPage();
       stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           channelCount: 1,
@@ -124,20 +127,32 @@ export function useRecorder(maxSeconds: number) {
     };
 
     machine.onstop = () => {
-      const seconds = Math.max(1, Math.round((Date.now() - startedAt.current) / 1000));
-      const blob = new Blob(chunks.current, { type: machine.mimeType || "audio/webm" });
+      const heldMs = Date.now() - startedAt.current;
+      const seconds = Math.max(1, Math.round(heldMs / 1000));
+      const type = (machine.mimeType || "audio/webm").split(";")[0];
+      const raw = new Blob(chunks.current, { type });
 
       stopTracks();
 
-      if (blob.size === 0) {
+      if (raw.size === 0) {
         setProblem("A gravação saiu vazia. Tente de novo.");
         setStage("IDLE");
 
         return;
       }
 
-      setTake({ blob, url: URL.createObjectURL(blob), seconds });
-      setStage("REVIEW");
+      const publish = (blob: Blob) => {
+        setTake({ blob, url: URL.createObjectURL(blob), seconds });
+        setStage("REVIEW");
+      };
+
+      if (type === "audio/webm") {
+        void withDuration(raw, heldMs).then(publish);
+
+        return;
+      }
+
+      publish(raw);
     };
 
     machine.start();
