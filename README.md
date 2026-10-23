@@ -4,8 +4,6 @@
 
 **FLOW** is a browser party game for **3 to 12 players**, each on their own phone, all in the same room. A card is read out loud, everyone writes an answer on their private slate, and all slates flip at once. Match the majority and you walk away clean — go your own way and you take a fish from the school. **Fewest fish at the end wins.**
 
-Inspired by the mechanic of *Segue o Fluxo* (Party Games, BR). Own rules text, own art, own name.
-
 ---
 
 ## 🎮 How a round goes
