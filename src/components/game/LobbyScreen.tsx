@@ -3,7 +3,6 @@
 import { AvatarPicker } from "@/components/game/AvatarPicker";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
-import { Fish } from "@/components/ui/Fish";
 import { RoomCode } from "@/components/game/RoomCode";
 import { Screen } from "@/components/ui/Screen";
 import { Wordmark } from "@/components/ui/Wordmark";

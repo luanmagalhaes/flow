@@ -38,9 +38,9 @@ Answers are grouped by a normalising pass (case, accents, punctuation, whitespac
 
 | Deck | Cards | Tone |
 | --- | --- | --- |
-| **Geral** | 140 | anything goes at any table |
-| **Picante** | 60 | for the right crowd |
-| **Misto** | 200 | both shuffled together |
+| **Geral** | 184 | anything goes at any table |
+| **Picante** | 80 | for the right crowd |
+| **Misto** | 264 | both shuffled together |
 
 ## 🛠️ Stack
 
@@ -87,7 +87,7 @@ src/
   components/
     game/        screens and game pieces
     ui/          buttons, modals, fish, wordmark
-  data/          brand copy and the 200 prompts
+  data/          brand copy and the 264 prompts
   hooks/         room polling, session, clock
   lib/
     game/        grouping, scoring, rotation, text
