@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Fish } from "@/components/ui/Fish";
 
 interface FishStrikeProps {
@@ -8,11 +8,17 @@ interface FishStrikeProps {
 }
 
 export function FishStrike({ onDone }: FishStrikeProps) {
+  const done = useRef(onDone);
+
   useEffect(() => {
-    const timer = window.setTimeout(onDone, 1500);
+    done.current = onDone;
+  }, [onDone]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => done.current(), 1500);
 
     return () => window.clearTimeout(timer);
-  }, [onDone]);
+  }, []);
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[70] flex items-center justify-center">
@@ -27,7 +33,7 @@ export function FishStrike({ onDone }: FishStrikeProps) {
         </div>
       </div>
 
-      <span className="display absolute bottom-[18vh] left-1/2 -translate-x-1/2 rounded-2xl border-4 border-ink bg-koi px-4 py-2 text-center text-lg text-paper shadow-[0_8px_0_var(--color-ink)]">
+      <span className="animate-strike-label display absolute bottom-[18vh] left-1/2 rounded-2xl border-4 border-ink bg-koi px-4 py-2 text-center text-lg text-paper shadow-[0_8px_0_var(--color-ink)]">
         Peixe na sua mão · ponto negativo
       </span>
     </div>

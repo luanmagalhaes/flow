@@ -154,6 +154,13 @@ button:disabled {
   100% { transform: translate3d(var(--strike-x, 38vw), var(--strike-y, -34vh), 0) scale(0.16) rotate(20deg); opacity: 0; }
 }
 
+@keyframes strike-label {
+  0% { transform: translate3d(-50%, 16px, 0); opacity: 0; }
+  15% { transform: translate3d(-50%, 0, 0); opacity: 1; }
+  75% { transform: translate3d(-50%, 0, 0); opacity: 1; }
+  100% { transform: translate3d(-50%, 0, 0); opacity: 0; }
+}
+
 @keyframes fish-shudder {
   0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
   20% { transform: translate3d(-6px, 2px, 0) rotate(-5deg); }
@@ -170,6 +177,11 @@ button:disabled {
 
 @utility animate-fish-strike {
   animation: fish-strike 1400ms var(--ease-snap) forwards;
+  will-change: transform, opacity;
+}
+
+@utility animate-strike-label {
+  animation: strike-label 1400ms ease-out forwards;
   will-change: transform, opacity;
 }
 
