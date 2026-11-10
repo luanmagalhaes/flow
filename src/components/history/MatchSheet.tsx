@@ -4,6 +4,11 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import type { MatchRow } from "@/types/history";
 
+const endings = {
+  target: "terminou no fim",
+  timeout: "largada pela metade",
+} as const;
+
 function longDate(iso: string): string {
   return new Date(iso).toLocaleDateString("pt-BR", {
     day: "2-digit",
@@ -52,7 +57,7 @@ export function MatchSheet({
       <div className="animate-card-pop relative flex max-h-[calc(100dvh-1.5rem)] w-full max-w-sm flex-col overflow-hidden rounded-[1.75rem] border-4 border-ink bg-foam shadow-[0_14px_0_var(--color-ink)]">
         <div className="shrink-0 border-b-2 border-ink/15 bg-koi px-4 py-3 text-center">
           <p className="display text-xs uppercase tracking-[0.18em] text-ink/70">
-            mesa {match.room_code} · {match.rounds} rodadas
+            mesa {match.room_code} · {match.rounds} rodadas · {endings[match.closed_by] ?? endings.target}
           </p>
           <h2 className="display text-2xl leading-tight text-ink">
             {match.winner_name ? `Venceu ${match.winner_name}` : "Sem vencedor"}

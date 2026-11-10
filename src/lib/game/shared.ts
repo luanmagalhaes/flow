@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { ServiceError } from "@/lib/errors";
 import { serverClient } from "@/lib/supabase";
 import type { PlayerRow, RoomNotice, RoomRow } from "@/types/room";
+import type { MatchEnding } from "@/types/history";
 
 export { maxAnswerLength, maxPlayers, minPlayers } from "@/lib/game/limits";
 
@@ -123,6 +124,7 @@ export async function saveMatch(
   room: RoomRow,
   people: Array<{ id: string; name: string; fish: number }>,
   winnerId: string | null,
+  closedBy: MatchEnding = "target",
 ): Promise<void> {
   if (room.is_test) {
     return;
@@ -132,6 +134,7 @@ export async function saveMatch(
     .from("fl_matches")
     .insert({
       room_code: room.code,
+      closed_by: closedBy,
       winner_name: people.find((person) => person.id === winnerId)?.name ?? null,
       rounds: room.round_number ?? 0,
       players: people.map((person) => ({

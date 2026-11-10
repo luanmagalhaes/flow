@@ -56,6 +56,7 @@ export interface RoomRow {
   is_test: boolean;
   round_phase: RoundPhase;
   current_prompt_id: string | null;
+  started_at: string | null;
   round_started_at: string | null;
   last_notice: RoomNotice | null;
   last_round: RoundReport | null;

@@ -373,3 +373,43 @@ async function facesTaken(roomId: string): Promise<string[]> {
     .map((row) => row.emoji)
     .filter((emoji): emoji is string => Boolean(emoji));
 }
+
+export const staleMatchHours = 5;
+
+export async function closeStaleMatches(): Promise<string[]> {
+  const client = serverClient();
+  const deadline = new Date(Date.now() - staleMatchHours * 60 * 60 * 1000).toISOString();
+  const { data } = await client
+    .from("fl_rooms")
+    .select("*")
+    .eq("phase", RoomPhase.Playing)
+    .lt("started_at", deadline);
+
+  const stale = (data ?? []) as RoomRow[];
+  const closed: string[] = [];
+
+  for (const room of stale) {
+    const people = await roster(room.id);
+    const front = leaders(people.map((person) => ({ playerId: person.id, fish: person.fish })));
+    const { data: done } = await client
+      .from("fl_rooms")
+      .update({
+        phase: RoomPhase.Finished,
+        finished_at: new Date().toISOString(),
+        winner_player_id: front[0]?.playerId ?? null,
+      })
+      .eq("id", room.id)
+      .eq("phase", RoomPhase.Playing)
+      .select("id");
+
+    if (((done ?? []) as unknown[]).length === 0) {
+      continue;
+    }
+
+    await saveMatch(room, people, front[0]?.playerId ?? null, "timeout");
+    await wipeChat(room.id);
+    closed.push(room.code);
+  }
+
+  return closed;
+}
